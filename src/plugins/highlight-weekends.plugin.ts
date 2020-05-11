@@ -11,6 +11,7 @@
 import Action from '@neuronet.io/vido/Action';
 import { Api } from '../api/api';
 import { Vido } from '../gstc';
+import { mergeDeep } from '@neuronet.io/vido/helpers';
 
 export interface Options {
   weekdays?: number[];
@@ -55,11 +56,10 @@ export function Plugin(options: Options = {}) {
     const pluginPath = 'config.plugin.HighlightWeekends';
     api = vidoInstance.api;
     className = options.className || api.getClass('chart-timeline-grid-row-cell') + '--weekend';
-    subs.push(
-      vidoInstance.state.subscribe(pluginPath, (value) => {
-        if (value) options = value;
-      })
-    );
+    const currentOptions = vidoInstance.state.get(pluginPath);
+    if (currentOptions) {
+      options = mergeDeep({}, options, currentOptions);
+    }
     subs.push(vidoInstance.state.subscribe('$data.chart.time.format.period', (period) => (enabled = period === 'day')));
     vidoInstance.state.update('config.actions.chart-timeline-grid-row-cell', (actions) => {
       actions.push(WeekendHighlightAction);
@@ -67,6 +67,9 @@ export function Plugin(options: Options = {}) {
     });
     return function onDestroy() {
       subs.forEach((unsub) => unsub());
+      vidoInstance.state.update('config.actions.chart-timeline-grid-row-cell', (actions) => {
+        return actions.filter((action) => action !== WeekendHighlightAction);
+      });
     };
   };
 }

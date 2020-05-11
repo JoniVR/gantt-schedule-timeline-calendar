@@ -11,6 +11,7 @@
 import { ScrollTypeHorizontal, Vido, Scroll } from '../gstc';
 import DeepState from 'deep-state-observer';
 import { Api } from '../api/api';
+import { mergeDeep } from '@neuronet.io/vido/helpers';
 
 export interface Point {
   x: number;
@@ -124,9 +125,9 @@ export function Plugin(options: Options = defaultOptions) {
     api = vido.api;
     state = vido.state;
     const pluginPath = 'config.plugin.CalendarScroll';
-    const currentOptions = state.get(pluginPath);
+    const currentOptions = vidoInstance.state.get(pluginPath);
     if (currentOptions) {
-      options = { ...options, ...currentOptions };
+      options = mergeDeep({}, options, currentOptions);
     }
     state.update(pluginPath, options);
     state.subscribe('config.plugin.CalendarScroll.enabled', (value) => (enabled = value));
@@ -134,5 +135,10 @@ export function Plugin(options: Options = defaultOptions) {
       chartActions.push(ChartAction);
       return chartActions;
     });
+    return function destroy() {
+      state.update('config.actions.chart-calendar', (chartActions) => {
+        return chartActions.filter((action) => action !== ChartAction);
+      });
+    };
   };
 }

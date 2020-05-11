@@ -11,6 +11,7 @@
 import DeepState from 'deep-state-observer';
 import { Api } from '../api/api';
 import { Vido } from '../gstc';
+import { mergeDeep } from '@neuronet.io/vido/helpers';
 
 export const CELL = 'chart-timeline-grid-row-cell';
 export type CELL_TYPE = 'chart-timeline-grid-row-cell';
@@ -213,12 +214,16 @@ class TimelinePointer {
 
 export function Plugin(options: Options) {
   return function initialize(vidoInstance: Vido) {
+    const currentOptions = vidoInstance.state.get(pluginPath);
+    if (currentOptions) {
+      options = mergeDeep({}, options, currentOptions);
+    }
     const subs = [];
-    subs.push(vidoInstance.state.subscribe(pluginPath, (value) => (options = value)));
     const defaultData = generateEmptyData(options);
     // for other plugins that are initialized before elements are saved
     vidoInstance.state.update(pluginPath, defaultData);
 
+    // initialize only if chart element is mounted
     let timelinePointerDestroy;
     subs.push(
       vidoInstance.state.subscribe('$data.elements.chart-timeline', (timelineElement: HTMLElement) => {

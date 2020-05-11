@@ -1,4 +1,70 @@
 /**
+ * Schedule - a throttle function that uses requestAnimationFrame to limit the rate at which a function is called.
+ *
+ * @param {function} fn
+ * @returns {function}
+ */
+/**
+ * Is object - helper function to determine if specified variable is an object
+ *
+ * @param {any} item
+ * @returns {boolean}
+ */
+function isObject(item) {
+    return item && typeof item === 'object' && !Array.isArray(item);
+}
+/**
+ * Merge deep - helper function which will merge objects recursively - creating brand new one - like clone
+ *
+ * @param {object} target
+ * @params {[object]} sources
+ * @returns {object}
+ */
+function mergeDeep(target, ...sources) {
+    const source = sources.shift();
+    if (isObject(target) && isObject(source)) {
+        for (const key in source) {
+            if (isObject(source[key])) {
+                if (typeof source[key].clone === 'function') {
+                    target[key] = source[key].clone();
+                }
+                else {
+                    if (typeof target[key] === 'undefined') {
+                        target[key] = {};
+                    }
+                    target[key] = mergeDeep(target[key], source[key]);
+                }
+            }
+            else if (Array.isArray(source[key])) {
+                target[key] = new Array(source[key].length);
+                let index = 0;
+                for (let item of source[key]) {
+                    if (isObject(item)) {
+                        if (typeof item.clone === 'function') {
+                            target[key][index] = item.clone();
+                        }
+                        else {
+                            target[key][index] = mergeDeep({}, item);
+                        }
+                    }
+                    else {
+                        target[key][index] = item;
+                    }
+                    index++;
+                }
+            }
+            else {
+                target[key] = source[key];
+            }
+        }
+    }
+    if (!sources.length) {
+        return target;
+    }
+    return mergeDeep(target, ...sources);
+}
+
+/**
  * TimelinePointer plugin
  *
  * @copyright Rafal Pospiech <https://neuronet.io>
@@ -148,11 +214,15 @@ class TimelinePointer {
 }
 function Plugin(options) {
     return function initialize(vidoInstance) {
+        const currentOptions = vidoInstance.state.get(pluginPath);
+        if (currentOptions) {
+            options = mergeDeep({}, options, currentOptions);
+        }
         const subs = [];
-        subs.push(vidoInstance.state.subscribe(pluginPath, (value) => (options = value)));
         const defaultData = generateEmptyData(options);
         // for other plugins that are initialized before elements are saved
         vidoInstance.state.update(pluginPath, defaultData);
+        // initialize only if chart element is mounted
         let timelinePointerDestroy;
         subs.push(vidoInstance.state.subscribe('$data.elements.chart-timeline', (timelineElement) => {
             if (timelineElement) {
@@ -176,159 +246,6 @@ var TimelinePointer$1 = /*#__PURE__*/Object.freeze({
   ITEM: ITEM,
   Plugin: Plugin
 });
-
-/**
- * ItemHold plugin
- *
- * @copyright Rafal Pospiech <https://neuronet.io>
- * @author    Rafal Pospiech <neuronet.io@gmail.com>
- * @package   gantt-schedule-timeline-calendar
- * @license   AGPL-3.0 (https://github.com/neuronetio/gantt-schedule-timeline-calendar/blob/master/LICENSE)
- * @link      https://github.com/neuronetio/gantt-schedule-timeline-calendar
- */
-function ItemHold(options = {}) {
-    let api;
-    const defaultOptions = {
-        time: 1000,
-        movementThreshold: 2,
-        action(element, data) { }
-    };
-    options = Object.assign(Object.assign({}, defaultOptions), options);
-    const holding = {};
-    const pointer = { x: 0, y: 0 };
-    function onPointerDown(item, element, event) {
-        if (typeof holding[item.id] === 'undefined') {
-            holding[item.id] = { x: event.x, y: event.y };
-            event.stopPropagation();
-            event.preventDefault();
-            setTimeout(() => {
-                if (typeof holding[item.id] !== 'undefined') {
-                    let exec = true;
-                    const xMovement = Math.abs(holding[item.id].x - pointer.x);
-                    const yMovement = Math.abs(holding[item.id].y - pointer.y);
-                    if (xMovement > options.movementThreshold) {
-                        exec = false;
-                    }
-                    if (yMovement > options.movementThreshold) {
-                        exec = false;
-                    }
-                    delete holding[item.id];
-                    if (exec) {
-                        options.action(element, item);
-                    }
-                }
-            }, options.time);
-        }
-    }
-    function onPointerUp(itemId) {
-        if (typeof holding[itemId] !== 'undefined') {
-            delete holding[itemId];
-        }
-    }
-    function action(element, data) {
-        function elementPointerDown(event) {
-            onPointerDown(data.item, element, event);
-        }
-        element.addEventListener('pointerdown', elementPointerDown);
-        function pointerUp() {
-            onPointerUp(data.item.id);
-        }
-        document.addEventListener('pointerup', pointerUp);
-        function onPointerMove(event) {
-            pointer.x = event.x;
-            pointer.y = event.y;
-        }
-        document.addEventListener('pointermove', onPointerMove);
-        return {
-            update(element, changedData) {
-                data = changedData;
-            },
-            destroy(element, data) {
-                document.removeEventListener('pointerup', onPointerUp);
-                document.removeEventListener('poitnermove', onPointerMove);
-                element.removeEventListener('pointerdown', elementPointerDown);
-            }
-        };
-    }
-    return function initialize(vido) {
-        api = vido.api;
-        vido.state.update('config.actions.chart-timeline-items-row-item', actions => {
-            actions.push(action);
-            return actions;
-        });
-    };
-}
-
-var ItemHold$1 = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  'default': ItemHold
-});
-
-/**
- * Schedule - a throttle function that uses requestAnimationFrame to limit the rate at which a function is called.
- *
- * @param {function} fn
- * @returns {function}
- */
-/**
- * Is object - helper function to determine if specified variable is an object
- *
- * @param {any} item
- * @returns {boolean}
- */
-function isObject(item) {
-    return item && typeof item === 'object' && !Array.isArray(item);
-}
-/**
- * Merge deep - helper function which will merge objects recursively - creating brand new one - like clone
- *
- * @param {object} target
- * @params {[object]} sources
- * @returns {object}
- */
-function mergeDeep(target, ...sources) {
-    const source = sources.shift();
-    if (isObject(target) && isObject(source)) {
-        for (const key in source) {
-            if (isObject(source[key])) {
-                if (typeof source[key].clone === 'function') {
-                    target[key] = source[key].clone();
-                }
-                else {
-                    if (typeof target[key] === 'undefined') {
-                        target[key] = {};
-                    }
-                    target[key] = mergeDeep(target[key], source[key]);
-                }
-            }
-            else if (Array.isArray(source[key])) {
-                target[key] = new Array(source[key].length);
-                let index = 0;
-                for (let item of source[key]) {
-                    if (isObject(item)) {
-                        if (typeof item.clone === 'function') {
-                            target[key][index] = item.clone();
-                        }
-                        else {
-                            target[key][index] = mergeDeep({}, item);
-                        }
-                    }
-                    else {
-                        target[key][index] = item;
-                    }
-                    index++;
-                }
-            }
-            else {
-                target[key] = source[key];
-            }
-        }
-    }
-    if (!sources.length) {
-        return target;
-    }
-    return mergeDeep(target, ...sources);
-}
 
 /**
  * ItemMovement plugin
@@ -622,14 +539,13 @@ class ItemMovement {
 }
 function Plugin$1(options = {}) {
     return function initialize(vidoInstance) {
-        const subs = [];
-        subs.push(vidoInstance.state.subscribe(pluginPath$1, (value) => (options = value)));
+        const currentOptions = vidoInstance.state.get(pluginPath$1);
+        if (currentOptions) {
+            options = mergeDeep({}, options, currentOptions);
+        }
         vidoInstance.state.update(pluginPath$1, generateEmptyPluginData(prepareOptions(options)));
         const itemMovement = new ItemMovement(vidoInstance);
-        return function destroy() {
-            subs.forEach((unsub) => unsub());
-            itemMovement.destroy();
-        };
+        return itemMovement.destroy;
     };
 }
 
@@ -2052,13 +1968,12 @@ class ItemResizing {
 }
 function Plugin$2(options = {}) {
     return function initialize(vidoInstance) {
-        const subs = [];
-        subs.push(vidoInstance.state.subscribe(pluginPath$2, (value) => (options = value)));
+        const currentOptions = vidoInstance.state.get(pluginPath$2);
+        if (currentOptions) {
+            options = mergeDeep({}, options, currentOptions);
+        }
         const itemResizing = new ItemResizing(vidoInstance, options);
-        return function destroy() {
-            subs.forEach((unsub) => unsub());
-            itemResizing.destroy();
-        };
+        return itemResizing.destroy;
     };
 }
 
@@ -2415,13 +2330,12 @@ class SelectionPlugin {
 function Plugin$3(options = {}) {
     options = prepareOptions$1(options);
     return function initialize(vidoInstance) {
-        const subs = [];
-        subs.push(vidoInstance.state.subscribe(pluginPath$3, (value) => (options = value)));
+        const currentOptions = vidoInstance.state.get(pluginPath$3);
+        if (currentOptions) {
+            options = mergeDeep({}, options, currentOptions);
+        }
         const selectionPlugin = new SelectionPlugin(vidoInstance, options);
-        return function destroy() {
-            subs.forEach((unsub) => unsub());
-            selectionPlugin.destroy();
-        };
+        return selectionPlugin.destroy;
     };
 }
 
@@ -2536,9 +2450,9 @@ function Plugin$4(options = defaultOptions) {
         api = vido.api;
         state = vido.state;
         const pluginPath = 'config.plugin.CalendarScroll';
-        const currentOptions = state.get(pluginPath);
+        const currentOptions = vidoInstance.state.get(pluginPath);
         if (currentOptions) {
-            options = Object.assign(Object.assign({}, options), currentOptions);
+            options = mergeDeep({}, options, currentOptions);
         }
         state.update(pluginPath, options);
         state.subscribe('config.plugin.CalendarScroll.enabled', (value) => (enabled = value));
@@ -2546,6 +2460,11 @@ function Plugin$4(options = defaultOptions) {
             chartActions.push(ChartAction);
             return chartActions;
         });
+        return function destroy() {
+            state.update('config.actions.chart-calendar', (chartActions) => {
+                return chartActions.filter((action) => action !== ChartAction);
+            });
+        };
     };
 }
 
@@ -2598,10 +2517,10 @@ function Plugin$5(options = {}) {
         const pluginPath = 'config.plugin.HighlightWeekends';
         api = vidoInstance.api;
         className = options.className || api.getClass('chart-timeline-grid-row-cell') + '--weekend';
-        subs.push(vidoInstance.state.subscribe(pluginPath, (value) => {
-            if (value)
-                options = value;
-        }));
+        const currentOptions = vidoInstance.state.get(pluginPath);
+        if (currentOptions) {
+            options = mergeDeep({}, options, currentOptions);
+        }
         subs.push(vidoInstance.state.subscribe('$data.chart.time.format.period', (period) => (enabled = period === 'day')));
         vidoInstance.state.update('config.actions.chart-timeline-grid-row-cell', (actions) => {
             actions.push(WeekendHighlightAction);
@@ -2609,6 +2528,9 @@ function Plugin$5(options = {}) {
         });
         return function onDestroy() {
             subs.forEach((unsub) => unsub());
+            vidoInstance.state.update('config.actions.chart-timeline-grid-row-cell', (actions) => {
+                return actions.filter((action) => action !== WeekendHighlightAction);
+            });
         };
     };
 }
@@ -2618,7 +2540,7 @@ var HighlightWeekends = /*#__PURE__*/Object.freeze({
   Plugin: Plugin$5
 });
 
-var plugins = { TimelinePointer: TimelinePointer$1, ItemHold: ItemHold$1, ItemMovement: ItemMovement$1, ItemResizing: ItemResizing$1, Selection, CalendarScroll, HighlightWeekends };
+var plugins = { TimelinePointer: TimelinePointer$1, ItemMovement: ItemMovement$1, ItemResizing: ItemResizing$1, Selection, CalendarScroll, HighlightWeekends };
 
 export default plugins;
 //# sourceMappingURL=plugins.esm.js.map

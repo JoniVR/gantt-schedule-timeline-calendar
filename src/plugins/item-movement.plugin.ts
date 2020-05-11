@@ -454,13 +454,12 @@ class ItemMovement {
 
 export function Plugin(options: Options = {}) {
   return function initialize(vidoInstance: Vido) {
-    const subs = [];
-    subs.push(vidoInstance.state.subscribe(pluginPath, (value) => (options = value)));
+    const currentOptions = vidoInstance.state.get(pluginPath);
+    if (currentOptions) {
+      options = mergeDeep({}, options, currentOptions);
+    }
     vidoInstance.state.update(pluginPath, generateEmptyPluginData(prepareOptions(options)));
     const itemMovement = new ItemMovement(vidoInstance);
-    return function destroy() {
-      subs.forEach((unsub) => unsub());
-      itemMovement.destroy();
-    };
+    return itemMovement.destroy;
   };
 }

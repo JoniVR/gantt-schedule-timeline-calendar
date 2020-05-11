@@ -22,6 +22,7 @@ import { Item, Cell, Items, Vido, htmlResult, Wrapper, ItemData } from '../gstc'
 import DeepState from 'deep-state-observer';
 import { Api } from '../api/api';
 import { StyleMap, lithtml } from '@neuronet.io/vido/vido.d';
+import { mergeDeep } from '@neuronet.io/vido/helpers';
 
 export type ModKey = 'shift' | 'ctrl' | 'alt' | '';
 
@@ -478,12 +479,11 @@ class SelectionPlugin {
 export function Plugin(options: Options = {}) {
   options = prepareOptions(options);
   return function initialize(vidoInstance: Vido) {
-    const subs = [];
-    subs.push(vidoInstance.state.subscribe(pluginPath, (value) => (options = value)));
+    const currentOptions = vidoInstance.state.get(pluginPath);
+    if (currentOptions) {
+      options = mergeDeep({}, options, currentOptions);
+    }
     const selectionPlugin = new SelectionPlugin(vidoInstance, options);
-    return function destroy() {
-      subs.forEach((unsub) => unsub());
-      selectionPlugin.destroy();
-    };
+    return selectionPlugin.destroy;
   };
 }

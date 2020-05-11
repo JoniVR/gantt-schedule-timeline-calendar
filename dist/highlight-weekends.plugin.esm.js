@@ -6,6 +6,72 @@ class Action {
 Action.prototype.isAction = true;
 
 /**
+ * Schedule - a throttle function that uses requestAnimationFrame to limit the rate at which a function is called.
+ *
+ * @param {function} fn
+ * @returns {function}
+ */
+/**
+ * Is object - helper function to determine if specified variable is an object
+ *
+ * @param {any} item
+ * @returns {boolean}
+ */
+function isObject(item) {
+    return item && typeof item === 'object' && !Array.isArray(item);
+}
+/**
+ * Merge deep - helper function which will merge objects recursively - creating brand new one - like clone
+ *
+ * @param {object} target
+ * @params {[object]} sources
+ * @returns {object}
+ */
+function mergeDeep(target, ...sources) {
+    const source = sources.shift();
+    if (isObject(target) && isObject(source)) {
+        for (const key in source) {
+            if (isObject(source[key])) {
+                if (typeof source[key].clone === 'function') {
+                    target[key] = source[key].clone();
+                }
+                else {
+                    if (typeof target[key] === 'undefined') {
+                        target[key] = {};
+                    }
+                    target[key] = mergeDeep(target[key], source[key]);
+                }
+            }
+            else if (Array.isArray(source[key])) {
+                target[key] = new Array(source[key].length);
+                let index = 0;
+                for (let item of source[key]) {
+                    if (isObject(item)) {
+                        if (typeof item.clone === 'function') {
+                            target[key][index] = item.clone();
+                        }
+                        else {
+                            target[key][index] = mergeDeep({}, item);
+                        }
+                    }
+                    else {
+                        target[key][index] = item;
+                    }
+                    index++;
+                }
+            }
+            else {
+                target[key] = source[key];
+            }
+        }
+    }
+    if (!sources.length) {
+        return target;
+    }
+    return mergeDeep(target, ...sources);
+}
+
+/**
  * Weekend highlight plugin
  *
  * @copyright Rafal Pospiech <https://neuronet.io>
@@ -49,10 +115,10 @@ function Plugin(options = {}) {
         const pluginPath = 'config.plugin.HighlightWeekends';
         api = vidoInstance.api;
         className = options.className || api.getClass('chart-timeline-grid-row-cell') + '--weekend';
-        subs.push(vidoInstance.state.subscribe(pluginPath, (value) => {
-            if (value)
-                options = value;
-        }));
+        const currentOptions = vidoInstance.state.get(pluginPath);
+        if (currentOptions) {
+            options = mergeDeep({}, options, currentOptions);
+        }
         subs.push(vidoInstance.state.subscribe('$data.chart.time.format.period', (period) => (enabled = period === 'day')));
         vidoInstance.state.update('config.actions.chart-timeline-grid-row-cell', (actions) => {
             actions.push(WeekendHighlightAction);
@@ -60,6 +126,9 @@ function Plugin(options = {}) {
         });
         return function onDestroy() {
             subs.forEach((unsub) => unsub());
+            vidoInstance.state.update('config.actions.chart-timeline-grid-row-cell', (actions) => {
+                return actions.filter((action) => action !== WeekendHighlightAction);
+            });
         };
     };
 }

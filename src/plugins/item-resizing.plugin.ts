@@ -14,6 +14,7 @@ import { Api, getClass } from '../api/api';
 import { lithtml } from '@neuronet.io/vido/vido';
 import { Point, ITEM } from './timeline-pointer.plugin';
 import { Dayjs } from 'dayjs';
+import { mergeDeep } from '@neuronet.io/vido/helpers';
 
 export interface Handle {
   width?: number;
@@ -466,12 +467,11 @@ class ItemResizing {
 
 export function Plugin(options: Options = {}) {
   return function initialize(vidoInstance: Vido) {
-    const subs = [];
-    subs.push(vidoInstance.state.subscribe(pluginPath, (value) => (options = value)));
+    const currentOptions = vidoInstance.state.get(pluginPath);
+    if (currentOptions) {
+      options = mergeDeep({}, options, currentOptions);
+    }
     const itemResizing = new ItemResizing(vidoInstance, options);
-    return function destroy() {
-      subs.forEach((unsub) => unsub());
-      itemResizing.destroy();
-    };
+    return itemResizing.destroy;
   };
 }

@@ -5,17 +5,6 @@
 }(this, (function (exports) { 'use strict';
 
   /**
-   * TimelinePointer plugin
-   *
-   * @copyright Rafal Pospiech <https://neuronet.io>
-   * @author    Rafal Pospiech <neuronet.io@gmail.com>
-   * @package   gantt-schedule-timeline-calendar
-   * @license   AGPL-3.0 (https://github.com/neuronetio/gantt-schedule-timeline-calendar/blob/master/LICENSE)
-   * @link      https://github.com/neuronetio/gantt-schedule-timeline-calendar
-   */
-  const ITEM = 'chart-timeline-items-row-item';
-
-  /**
    * Schedule - a throttle function that uses requestAnimationFrame to limit the rate at which a function is called.
    *
    * @param {function} fn
@@ -80,6 +69,17 @@
       }
       return mergeDeep(target, ...sources);
   }
+
+  /**
+   * TimelinePointer plugin
+   *
+   * @copyright Rafal Pospiech <https://neuronet.io>
+   * @author    Rafal Pospiech <neuronet.io@gmail.com>
+   * @package   gantt-schedule-timeline-calendar
+   * @license   AGPL-3.0 (https://github.com/neuronetio/gantt-schedule-timeline-calendar/blob/master/LICENSE)
+   * @link      https://github.com/neuronetio/gantt-schedule-timeline-calendar
+   */
+  const ITEM = 'chart-timeline-items-row-item';
 
   /**
    * ItemMovement plugin
@@ -373,14 +373,13 @@
   }
   function Plugin(options = {}) {
       return function initialize(vidoInstance) {
-          const subs = [];
-          subs.push(vidoInstance.state.subscribe(pluginPath, (value) => (options = value)));
+          const currentOptions = vidoInstance.state.get(pluginPath);
+          if (currentOptions) {
+              options = mergeDeep({}, options, currentOptions);
+          }
           vidoInstance.state.update(pluginPath, generateEmptyPluginData(prepareOptions(options)));
           const itemMovement = new ItemMovement(vidoInstance);
-          return function destroy() {
-              subs.forEach((unsub) => unsub());
-              itemMovement.destroy();
-          };
+          return itemMovement.destroy;
       };
   }
 
