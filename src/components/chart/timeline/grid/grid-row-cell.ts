@@ -49,7 +49,7 @@ interface Props {
 }
 
 function ChartTimelineGridRowCell(vido: Vido, props: Props) {
-  const { api, state, onDestroy, Detach, Actions, update, html, onChange, StyleMap, createComponent } = vido;
+  const { api, state, onDestroy, Detach, Actions, update, html, onChange, StyleMap } = vido;
   const componentName = 'chart-timeline-grid-row-cell';
   const actionProps = {
     ...props,

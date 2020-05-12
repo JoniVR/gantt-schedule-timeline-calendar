@@ -127,10 +127,8 @@ export default function ChartTimelineGridRow(vido: Vido, props: RowWithCells) {
     return wrapper(
       html`
         <div detach=${detach} class=${className} data-actions=${actions} style=${styleMap}>
-          ${slots.html('before', templateProps)}${rowsCellsComponents.map((r) => r.html())}${slots.html(
-            'after',
-            templateProps
-          )}
+          ${slots.html('before', templateProps)}${rowsCellsComponents.map((r) => r.html())}
+          ${slots.html('after', templateProps)}
         </div>
       `,
       { vido, props, templateProps }

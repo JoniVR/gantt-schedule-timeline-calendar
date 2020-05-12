@@ -17,7 +17,7 @@
    * @returns {boolean}
    */
   function isObject(item) {
-      return item && typeof item === 'object' && !Array.isArray(item);
+      return item && typeof item === 'object' && item.constructor && item.constructor.name === 'Object';
   }
   /**
    * Merge deep - helper function which will merge objects recursively - creating brand new one - like clone
@@ -221,8 +221,9 @@
   function Plugin(options) {
       return function initialize(vidoInstance) {
           const currentOptions = vidoInstance.state.get(pluginPath);
+          console.log(currentOptions);
           if (currentOptions) {
-              options = mergeDeep({}, options, currentOptions);
+              options = mergeDeep(mergeDeep({}, options), currentOptions);
           }
           const subs = [];
           const defaultData = generateEmptyData(options);
