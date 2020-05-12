@@ -218,11 +218,10 @@ export class Api {
           actualWidth: -1,
           detached: false,
         };
-      if (!item.$data.time)
-        item.$data.time = {
-          startDate: this.time.date(item.time.start),
-          endDate: this.time.date(item.time.end),
-        };
+      item.$data.time = {
+        startDate: this.time.date(item.time.start),
+        endDate: this.time.date(item.time.end),
+      };
       item.$data.actualHeight = item.height;
       if (typeof item.top !== 'number') item.top = 0;
       if (!item.gap) item.gap = {};
@@ -240,19 +239,20 @@ export class Api {
     let top = 0;
     for (const rowId in rows) {
       const row = rows[rowId];
-      row.$data = {
-        parents: [],
-        children: [],
-        position: {
-          top: 0,
-          topPercent: 0,
-          bottomPercent: 0,
-          viewTop: 0,
-        },
-        items: [],
-        actualHeight: 0,
-        outerHeight: 0,
-      };
+      if (!row.$data)
+        row.$data = {
+          parents: [],
+          children: [],
+          position: {
+            top: 0,
+            topPercent: 0,
+            bottomPercent: 0,
+            viewTop: 0,
+          },
+          items: [],
+          actualHeight: 0,
+          outerHeight: 0,
+        };
       if (typeof row.height !== 'number') {
         row.height = defaultHeight;
       }

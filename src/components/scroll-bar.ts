@@ -337,7 +337,6 @@ export default function ScrollBar(vido: Vido, props: Props) {
   const innerActions = Actions.create(innerComponentActions, { api, state, props });
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   return () =>
     html`

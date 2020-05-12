@@ -75,7 +75,6 @@ export default function ChartTimelineGridRow(vido: Vido, props: RowWithCells) {
   const detach = new Detach(() => shouldDetach);
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   const rowsCellsComponents = [];
   onChange(function onPropsChange(changedProps, options) {

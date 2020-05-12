@@ -4453,6 +4453,9 @@ function getInternalComponentMethods(components, actionsByInstance, clone) {
             this.vidoInstance = vidoInstance;
             this.renderFunction = renderFunction;
             this.content = content;
+            this.destroy = this.destroy.bind(this);
+            this.update = this.update.bind(this);
+            this.change = this.change.bind(this);
         }
         destroy() {
             var _a;
@@ -4614,6 +4617,80 @@ var helpers = {
     schedule,
 };
 
+class Slots {
+    constructor(vido, props) {
+        this.slotInstances = {};
+        this.destroyed = false;
+        this.vido = vido;
+        this.props = props;
+        this.destroy = this.destroy.bind(this);
+        this.change = this.change.bind(this);
+        this.html = this.html.bind(this);
+        this.getInstances = this.getInstances.bind(this);
+        this.setComponents = this.setComponents.bind(this);
+        this.vido.onDestroy(() => {
+            this.destroy();
+        });
+    }
+    setComponents(slots) {
+        if (!slots || this.destroyed)
+            return;
+        for (const slotPlacement in slots) {
+            const slotsComponents = slots[slotPlacement];
+            if (typeof this.slotInstances[slotPlacement] === 'undefined') {
+                this.slotInstances[slotPlacement] = [];
+            }
+            for (const instance of this.slotInstances[slotPlacement]) {
+                instance.destroy();
+            }
+            this.slotInstances[slotPlacement].length = 0;
+            for (const component of slotsComponents) {
+                this.slotInstances[slotPlacement].push(this.vido.createComponent(component, this.props));
+            }
+        }
+        this.vido.update();
+    }
+    destroy() {
+        if (this.destroyed)
+            return;
+        for (const slotPlacement in this.slotInstances) {
+            for (const instance of this.slotInstances[slotPlacement]) {
+                instance.destroy();
+            }
+            this.slotInstances[slotPlacement].length = 0;
+        }
+        this.destroyed = true;
+    }
+    change(changedProps, options = undefined) {
+        if (this.destroyed)
+            return;
+        for (const slotPlacement in this.slotInstances) {
+            const instances = this.slotInstances[slotPlacement];
+            for (const slot of instances) {
+                slot.change(changedProps, options);
+            }
+        }
+    }
+    getInstances(placement) {
+        if (this.destroyed)
+            return;
+        if (placement === undefined)
+            return this.slotInstances;
+        return this.slotInstances[placement];
+    }
+    html(placement, templateProps) {
+        if (this.destroyed)
+            return;
+        return this.slotInstances[placement].map((instance) => instance.html(templateProps));
+    }
+    getProps() {
+        return this.props;
+    }
+    isDestroyed() {
+        return this.destroyed;
+    }
+}
+
 function Vido(state, api) {
     let componentId = 0;
     const components = new Map();
@@ -4662,17 +4739,19 @@ function Vido(state, api) {
             this.Detach = Detach;
             this.PointerAction = PointerAction;
             this.Action = Action;
+            this.Slots = Slots;
             this._components = components;
             this._actions = actionsByInstance;
             this.reuseComponents = this.reuseComponents.bind(this);
             this.onDestroy = this.onDestroy.bind(this);
             this.onChange = this.onChange.bind(this);
             this.update = this.update.bind(this);
+            this.destroyComponent = this.destroyComponent.bind(this);
             for (const name in additionalMethods) {
-                this[name] = additionalMethods[name];
+                this[name] = additionalMethods[name].bind(this);
             }
         }
-        addMethod(name, body) {
+        static addMethod(name, body) {
             additionalMethods[name] = body;
         }
         onDestroy(fn) {
@@ -4900,7 +4979,8 @@ Vido.prototype.guard = guard;
 Vido.prototype.ifDefined = ifDefined;
 Vido.prototype.repeat = repeat;
 Vido.prototype.unsafeHTML = unsafeHTML;
-Vido.prototype.unti = until;
+Vido.prototype.until = until;
+Vido.prototype.Slots = Slots;
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -5895,9 +5975,15 @@ function Main(vido, props = {}) {
     let ChartComponent;
     componentSubs.push(state.subscribe('config.components.Chart', (value) => (ChartComponent = value)));
     const List = createComponent(ListComponent);
-    onDestroy(List.destroy);
+    onDestroy(() => {
+        if (List)
+            List.destroy();
+    });
     const Chart = createComponent(ChartComponent);
-    onDestroy(Chart.destroy);
+    onDestroy(() => {
+        if (Chart)
+            Chart.destroy();
+    });
     onDestroy(() => {
         componentSubs.forEach((unsub) => unsub());
     });
@@ -7010,7 +7096,6 @@ function ScrollBar(vido, props) {
     const innerComponentActions = [InnerAction];
     const innerActions = Actions.create(innerComponentActions, { api, state, props });
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     return () => html `
       <div
         data-actions=${outerActions}
@@ -7129,7 +7214,6 @@ function List(vido, props = {}) {
     componentActions.push(ListAction);
     const actions = Actions.create(componentActions, Object.assign(Object.assign({}, props), { api, state }));
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     return (templateProps) => wrapper(cache(list.columns.percent > 0
         ? html `
               <div class=${className} data-actions=${actions} style=${styleMap} @wheel=${onWheel}>
@@ -7212,7 +7296,6 @@ function ListColumn(vido, props) {
     const ListColumnHeader = createComponent(ListColumnHeaderComponent, props);
     onDestroy(ListColumnHeader.destroy);
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     onChange((changedProps) => {
         props = changedProps;
         for (const prop in props) {
@@ -7293,7 +7376,6 @@ function ListColumnHeader(vido, props) {
         componentsSubs.forEach((unsub) => unsub());
     });
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     onChange((changedProps) => {
         props = changedProps;
         for (const prop in props) {
@@ -7369,7 +7451,6 @@ function ListColumnHeaderResizer(vido, props) {
         update();
     }));
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     function updateData() {
         if (!props.column)
             return;
@@ -7504,7 +7585,6 @@ function ListColumnRow(vido, props) {
     }));
     let classNameCurrent = className;
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     function onPropsChange(changedProps, options) {
         if (options.leave || changedProps.row === undefined || changedProps.column === undefined) {
             shouldDetach = true;
@@ -7631,7 +7711,6 @@ function ListColumnRowExpander(vido, props) {
         update();
     }));
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     if (props.row) {
         function onPropsChange(changedProps) {
             props = changedProps;
@@ -7686,7 +7765,6 @@ function ListColumnRowExpanderToggle(vido, props) {
         update();
     }));
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     function expandedChangeRow(isExpanded) {
         expanded = isExpanded;
         update();
@@ -7807,7 +7885,6 @@ function ListToggle(vido, props = {}) {
         }
     }
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     return (templateProps) => wrapper(html `
         <div class=${className} style=${styleMap} @pointerdown=${pointerDown} @pointerup=${pointerUp}>
           ${slots.html('before', templateProps)}<img
@@ -7887,7 +7964,6 @@ function Chart(vido, props = {}) {
     });
     const actions = Actions.create(componentActions, { api, state });
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     return (templateProps) => wrapper(html `
         <div class=${className} data-actions=${actions} @wheel=${onWheel}>
           ${slots.html('before', templateProps)}${ChartCalendar.html()}${slots.html('inside', templateProps)}${ChartTimeline.html()}${ScrollBarVertical.html()}${calculatedZoomMode
@@ -7962,7 +8038,6 @@ function ChartCalendar(vido, props) {
     });
     const actions = Actions.create(componentActions, actionProps);
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     return (templateProps) => wrapper(html `
         <div class=${className} data-actions=${actions} style=${styleMap}>
           ${slots.html('before', templateProps)}
@@ -8055,7 +8130,6 @@ function ChartCalendarDay(vido, props) {
     let shouldDetach = false;
     const detach = new Detach(() => shouldDetach);
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     let timeSub;
     const actionProps = { date: props.date, period: props.period, api, state };
     onChange((changedProps, options) => {
@@ -8123,23 +8197,31 @@ function ChartTimeline(vido, props) {
             Grid.destroy();
         Grid = createComponent(component);
     }));
-    onDestroy(Grid.destroy);
+    onDestroy(() => {
+        if (Grid)
+            Grid.destroy();
+    });
     let Items;
     onDestroy(state.subscribe('config.components.ChartTimelineItems', (component) => {
         if (Items)
             Items.destroy();
         Items = createComponent(component);
     }));
-    onDestroy(Items.destroy);
+    onDestroy(() => {
+        if (Items)
+            Items.destroy();
+    });
     let ListToggle;
     onDestroy(state.subscribe('config.components.ListToggle', (component) => {
         if (ListToggle)
             ListToggle.destroy();
         ListToggle = createComponent(component);
     }));
-    onDestroy(ListToggle.destroy);
+    onDestroy(() => {
+        if (ListToggle)
+            ListToggle.destroy();
+    });
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     let className, classNameInner;
     onDestroy(state.subscribe('config.classNames', () => {
         className = api.getClass(componentName);
@@ -8307,7 +8389,6 @@ function ChartTimelineGrid(vido, props) {
     componentActions.push(BindElementAction$3);
     const actions = Actions.create(componentActions, actionProps);
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     return (templateProps) => wrapper(html `
         <div class=${className} data-actions=${actions} style=${styleMap}>
           ${slots.html('before', templateProps)}${rowsComponents.map((r) => r.html())}${slots.html('after', templateProps)}
@@ -8372,7 +8453,6 @@ function ChartTimelineGridRow(vido, props) {
     let shouldDetach = false;
     const detach = new Detach(() => shouldDetach);
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     const rowsCellsComponents = [];
     onChange(function onPropsChange(changedProps, options) {
         var _a, _b, _c, _d, _e, _f, _g;
@@ -8476,7 +8556,6 @@ function ChartTimelineGridRowCell(vido, props) {
         update();
     }));
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     let className;
     function updateClassName(time) {
         className = api.getClass(componentName);
@@ -8576,7 +8655,6 @@ function ChartTimelineItems(vido, props = {}) {
     });
     const actions = Actions.create(componentActions, { api, state });
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     return (templateProps) => wrapper(html `
         <div class=${className} style=${styleMap} data-actions=${actions}>
           ${slots.html('before', templateProps)}${rowsComponents.map((r) => r.html())}${slots.html('after', templateProps)}
@@ -8681,7 +8759,6 @@ function ChartTimelineItemsRow(vido, props) {
         update();
     }));
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     onChange(function onPropsChange(changedProps, options) {
         if (options.leave || changedProps.row === undefined) {
             shouldDetach = true;
@@ -8857,7 +8934,6 @@ function ChartTimelineItemsRowItem(vido, props) {
     </div>
   `;
     const slots = api.generateSlots(componentName, vido, props);
-    onDestroy(slots.destroy);
     onChange(function onPropsChange(changedProps, options) {
         if (options.leave || changedProps.row === undefined || changedProps.item === undefined) {
             leave = true;
@@ -8905,10 +8981,13 @@ function ChartTimelineItemsRowItem(vido, props) {
             return unsafeHTML(props.item.label({ item: props.item, vido }));
         return unsafeHTML(props.item.label);
     }
+    function getTitle() {
+        return props.item.isHTML || typeof props.item.label === 'function' ? '' : props.item.label;
+    }
     return (templateProps) => wrapper(html `
         <div detach=${detach} class=${classNameCurrent} data-actions=${actions} style=${styleMap}>
           ${cutterLeft()}${slots.html('before', templateProps)}
-          <div class=${labelClassName} title=${props.item.isHTML ? null : props.item.label}>
+          <div class=${labelClassName} title=${getTitle()}>
             ${slots.html('inside', templateProps)}${props.item.isHTML ? getHtml() : getText()}
           </div>
           ${slots.html('after', templateProps)}${cutterRight()}
@@ -10925,47 +11004,28 @@ class DeepState {
     }
 }
 
-function generateSlots(name, vido, props) {
-    let slots = {
-        before: [],
-        inside: [],
-        after: [],
-    };
-    for (const slotPlacement in slots) {
-        vido.onDestroy(vido.state.subscribe(`config.slots.${name}.${slotPlacement}`, (slotsComponents) => {
-            for (const instance of slots[slotPlacement]) {
-                instance.destroy();
-            }
-            slots[slotPlacement].length = 0;
-            for (const component of slotsComponents) {
-                slots[slotPlacement].push(vido.createComponent(component, props));
-            }
-        }));
+class Slots$1 extends Slots {
+    constructor(name, vido, props) {
+        super(vido, props);
+        this.subs = [];
+        this.name = name;
+        this.subs.push(vido.state.subscribe(`config.slots.${name}`, this.setComponents, 
+        // execute all neccesary jobs update view and then update slots - move this job at the end
+        // because state update come first always and then components might be destroyed
+        // so we are waiting to know if we need to create slot components or parent component is destroyed
+        // and we should not create new slots
+        { queue: true }));
     }
-    return {
-        destroy() {
-            for (const slotPlacement in slots) {
-                for (const instance of slots[slotPlacement]) {
-                    instance.destroy();
-                }
-                slots[slotPlacement].length = 0;
-            }
-        },
-        change(changedProps, options = undefined) {
-            for (const slotPlacement in slots) {
-                const instances = slots[slotPlacement];
-                for (const slot of instances) {
-                    slot.change(changedProps, options);
-                }
-            }
-        },
-        get(placement) {
-            return slots[placement];
-        },
-        html(placement, templateProps) {
-            return slots[placement].map((instance) => instance.html(templateProps));
-        },
-    };
+    destroy() {
+        this.subs.forEach((unsub) => unsub());
+        super.destroy();
+    }
+    getName() {
+        return this.name;
+    }
+}
+function generateSlots(name, vido, props) {
+    return new Slots$1(name, vido, props);
 }
 
 /**
@@ -11021,7 +11081,7 @@ class f{constructor(t,e,n){this.__parts=[],this.template=t,this.processor=e,this
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
- */let y;const x=` ${l} `,b=document.createElement("template");class _{constructor(t,e,n,s){this.strings=t,this.values=e,this.type=n,this.processor=s;}getHTML(){const t=this.strings.length-1;let e="",n=!1;for(let s=0;s<t;s++){const t=this.strings[s],o=t.lastIndexOf("\x3c!--");n=(o>-1||n)&&-1===t.indexOf("--\x3e",o+1);const i=g.exec(t);e+=null===i?t+(n?x:c):t.substr(0,i.index)+i[1]+i[2]+"$lit$"+i[3]+l;}return e+=this.strings[t],e}getTemplateElement(){const t=b.cloneNode();return t.innerHTML=function(t){const e=window,n=e.trustedTypes||e.TrustedTypes;return n&&!y&&(y=n.createPolicy("lit-html",{createHTML:t=>t})),y?y.createHTML(t):t}(this.getHTML()),t}}class w extends _{getHTML(){return `<svg>${super.getHTML()}</svg>`}getTemplateElement(){const t=super.getTemplateElement(),e=t.content,n=e.firstChild;return e.removeChild(n),o(e,n.firstChild),t}}
+ */let y;const b=` ${l} `,x=document.createElement("template");class _{constructor(t,e,n,s){this.strings=t,this.values=e,this.type=n,this.processor=s;}getHTML(){const t=this.strings.length-1;let e="",n=!1;for(let s=0;s<t;s++){const t=this.strings[s],o=t.lastIndexOf("\x3c!--");n=(o>-1||n)&&-1===t.indexOf("--\x3e",o+1);const i=g.exec(t);e+=null===i?t+(n?b:c):t.substr(0,i.index)+i[1]+i[2]+"$lit$"+i[3]+l;}return e+=this.strings[t],e}getTemplateElement(){const t=x.cloneNode();return t.innerHTML=function(t){const e=window,n=e.trustedTypes||e.TrustedTypes;return n&&!y&&(y=n.createPolicy("lit-html",{createHTML:t=>t})),y?y.createHTML(t):t}(this.getHTML()),t}}class w extends _{getHTML(){return `<svg>${super.getHTML()}</svg>`}getTemplateElement(){const t=super.getTemplateElement(),e=t.content,n=e.firstChild;return e.removeChild(n),o(e,n.firstChild),t}}
 /**
  * @license
  * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -11034,7 +11094,7 @@ class f{constructor(t,e,n){this.__parts=[],this.template=t,this.processor=e,this
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
- */const N=t=>null===t||!("object"==typeof t||"function"==typeof t),P=t=>Array.isArray(t)||!(!t||!t[Symbol.iterator]),E=t=>t,M=(t,e,n)=>E;let A=M;const S=document.createTextNode("");class T{constructor(t,e,n,s,o="attribute"){this.dirty=!0,this.element=t,this.name=e,this.strings=n,this.parts=[];let i=s&&s.sanitizer;void 0===i&&(i=A(t,e,o),void 0!==s&&(s.sanitizer=i)),this.sanitizer=i;for(let t=0;t<n.length-1;t++)this.parts[t]=this._createPart();}_createPart(){return new Y(this)}_getValue(){const t=this.strings,e=this.parts,n=t.length-1;if(1===n&&""===t[0]&&""===t[1]&&void 0!==e[0]){const t=e[0].value;if(!P(t))return t}let s="";for(let o=0;o<n;o++){s+=t[o];const n=e[o];if(void 0!==n){const t=n.value;if(N(t)||!P(t))s+="string"==typeof t?t:String(t);else for(const e of t)s+="string"==typeof e?e:String(e);}}return s+=t[n],s}commit(){if(this.dirty){this.dirty=!1;let t=this._getValue();t=this.sanitizer(t),"symbol"==typeof t&&(t=String(t)),this.element.setAttribute(this.name,t);}}}class Y{constructor(t){this.value=void 0,this.committer=t;}setValue(t){t===r||N(t)&&t===this.value||(this.value=t,n(t)||(this.committer.dirty=!0));}commit(){for(;n(this.value);){const t=this.value;this.value=r,t.isClass?t.body(this):t(this);}this.value!==r&&this.committer.commit();}}class X{constructor(t,e){this.value=void 0,this.__pendingValue=void 0,this.textSanitizer=void 0,this.options=t,this.templatePart=e;}appendInto(t){this.startNode=t.appendChild(v()),this.endNode=t.appendChild(v());}insertAfterNode(t){this.startNode=t,this.endNode=t.nextSibling;}appendIntoPart(t){t.__insert(this.startNode=v()),t.__insert(this.endNode=v());}insertAfterPart(t){t.__insert(this.startNode=v()),this.endNode=t.endNode,t.endNode=this.startNode;}setValue(t){this.__pendingValue=t;}commit(){for(;n(this.__pendingValue);){const t=this.__pendingValue;this.__pendingValue=r,t.isClass?t.body(this):t(this);}const t=this.__pendingValue;t!==r&&(N(t)?t!==this.value&&this.__commitText(t):t instanceof _?this.__commitTemplateResult(t):t instanceof Node?this.__commitNode(t):P(t)?this.__commitIterable(t):t===a?(this.value=a,this.clear()):this.__commitText(t));}__insert(t){this.endNode.parentNode.insertBefore(t,this.endNode);}__commitNode(t){this.value!==t&&(this.clear(),this.__insert(t),this.value=t);}__commitText(t){const e=this.startNode.nextSibling;if(t=null==t?"":t,e===this.endNode.previousSibling&&3===e.nodeType){void 0===this.textSanitizer&&(this.textSanitizer=A(e,"data","property"));const n=this.textSanitizer(t);e.data="string"==typeof n?n:String(n);}else {const e=S.cloneNode();this.__commitNode(e),void 0===this.textSanitizer&&(this.textSanitizer=A(e,"data","property"));const n=this.textSanitizer(t);e.data="string"==typeof n?n:String(n);}this.value=t;}__commitTemplateResult(t){const e=this.options.templateFactory(t);if(this.value instanceof f&&this.value.template===e)this.value.update(t.values);else {const n=this.endNode.parentNode;if(A!==M&&"STYLE"===n.nodeName||"SCRIPT"===n.nodeName)return void this.__commitText("/* lit-html will not write TemplateResults to scripts and styles */");const s=new f(e,t.processor,this.options),o=s._clone();s.update(t.values),this.__commitNode(o),this.value=s;}}__commitIterable(t){Array.isArray(this.value)||(this.value=[],this.clear());const e=this.value;let n,s=0;for(const o of t)n=e[s],void 0===n&&(n=new X(this.options,this.templatePart),e.push(n),0===s?n.appendIntoPart(this):n.insertAfterPart(e[s-1])),n.setValue(o),n.commit(),s++;s<e.length&&(e.length=s,this.clear(n&&n.endNode));}clear(t=this.startNode){i(this.startNode.parentNode,t.nextSibling,this.endNode);}}class I{constructor(t,e,n){if(this.value=void 0,this.__pendingValue=void 0,2!==n.length||""!==n[0]||""!==n[1])throw new Error("Boolean attributes can only contain a single expression");this.element=t,this.name=e,this.strings=n;}setValue(t){this.__pendingValue=t;}commit(){for(;n(this.__pendingValue);){const t=this.__pendingValue;this.__pendingValue=r,t.isClass?t.body(this):t(this);}if(this.__pendingValue===r)return;const t=!!this.__pendingValue;this.value!==t&&(t?this.element.setAttribute(this.name,""):this.element.removeAttribute(this.name),this.value=t),this.__pendingValue=r;}}class C extends T{constructor(t,e,n,s){super(t,e,n,s,"property"),this.single=2===n.length&&""===n[0]&&""===n[1];}_createPart(){return new V(this)}_getValue(){return this.single?this.parts[0].value:super._getValue()}commit(){if(this.dirty){this.dirty=!1;let t=this._getValue();t=this.sanitizer(t),this.element[this.name]=t;}}}class V extends Y{}let L=!1;(()=>{try{const t={get capture(){return L=!0,!1}};window.addEventListener("test",t,t),window.removeEventListener("test",t,t);}catch(t){}})();class k{constructor(t,e,n){this.value=void 0,this.__pendingValue=void 0,this.element=t,this.eventName=e,this.eventContext=n,this.__boundHandleEvent=t=>this.handleEvent(t);}setValue(t){this.__pendingValue=t;}commit(){for(;n(this.__pendingValue);){const t=this.__pendingValue;this.__pendingValue=r,t.isClass?t.body(this):t(this);}if(this.__pendingValue===r)return;const t=this.__pendingValue,e=this.value,s=null==t||null!=e&&(t.capture!==e.capture||t.once!==e.once||t.passive!==e.passive),o=null!=t&&(null==e||s);s&&this.element.removeEventListener(this.eventName,this.__boundHandleEvent,this.__options),o&&(this.__options=D(t),this.element.addEventListener(this.eventName,this.__boundHandleEvent,this.__options)),this.value=t,this.__pendingValue=r;}handleEvent(t){"function"==typeof this.value?this.value.call(this.eventContext||this.element,t):this.value.handleEvent(t);}}const D=t=>t&&(L?{capture:t.capture,passive:t.passive,once:t.once}:t.capture)
+ */const N=t=>null===t||!("object"==typeof t||"function"==typeof t),P=t=>Array.isArray(t)||!(!t||!t[Symbol.iterator]),E=t=>t,I=(t,e,n)=>E;let S=I;const M=document.createTextNode("");class A{constructor(t,e,n,s,o="attribute"){this.dirty=!0,this.element=t,this.name=e,this.strings=n,this.parts=[];let i=s&&s.sanitizer;void 0===i&&(i=S(t,e,o),void 0!==s&&(s.sanitizer=i)),this.sanitizer=i;for(let t=0;t<n.length-1;t++)this.parts[t]=this._createPart();}_createPart(){return new T(this)}_getValue(){const t=this.strings,e=this.parts,n=t.length-1;if(1===n&&""===t[0]&&""===t[1]&&void 0!==e[0]){const t=e[0].value;if(!P(t))return t}let s="";for(let o=0;o<n;o++){s+=t[o];const n=e[o];if(void 0!==n){const t=n.value;if(N(t)||!P(t))s+="string"==typeof t?t:String(t);else for(const e of t)s+="string"==typeof e?e:String(e);}}return s+=t[n],s}commit(){if(this.dirty){this.dirty=!1;let t=this._getValue();t=this.sanitizer(t),"symbol"==typeof t&&(t=String(t)),this.element.setAttribute(this.name,t);}}}class T{constructor(t){this.value=void 0,this.committer=t;}setValue(t){t===r||N(t)&&t===this.value||(this.value=t,n(t)||(this.committer.dirty=!0));}commit(){for(;n(this.value);){const t=this.value;this.value=r,t.isClass?t.body(this):t(this);}this.value!==r&&this.committer.commit();}}class Y{constructor(t,e){this.value=void 0,this.__pendingValue=void 0,this.textSanitizer=void 0,this.options=t,this.templatePart=e;}appendInto(t){this.startNode=t.appendChild(v()),this.endNode=t.appendChild(v());}insertAfterNode(t){this.startNode=t,this.endNode=t.nextSibling;}appendIntoPart(t){t.__insert(this.startNode=v()),t.__insert(this.endNode=v());}insertAfterPart(t){t.__insert(this.startNode=v()),this.endNode=t.endNode,t.endNode=this.startNode;}setValue(t){this.__pendingValue=t;}commit(){for(;n(this.__pendingValue);){const t=this.__pendingValue;this.__pendingValue=r,t.isClass?t.body(this):t(this);}const t=this.__pendingValue;t!==r&&(N(t)?t!==this.value&&this.__commitText(t):t instanceof _?this.__commitTemplateResult(t):t instanceof Node?this.__commitNode(t):P(t)?this.__commitIterable(t):t===a?(this.value=a,this.clear()):this.__commitText(t));}__insert(t){this.endNode.parentNode.insertBefore(t,this.endNode);}__commitNode(t){this.value!==t&&(this.clear(),this.__insert(t),this.value=t);}__commitText(t){const e=this.startNode.nextSibling;if(t=null==t?"":t,e===this.endNode.previousSibling&&3===e.nodeType){void 0===this.textSanitizer&&(this.textSanitizer=S(e,"data","property"));const n=this.textSanitizer(t);e.data="string"==typeof n?n:String(n);}else {const e=M.cloneNode();this.__commitNode(e),void 0===this.textSanitizer&&(this.textSanitizer=S(e,"data","property"));const n=this.textSanitizer(t);e.data="string"==typeof n?n:String(n);}this.value=t;}__commitTemplateResult(t){const e=this.options.templateFactory(t);if(this.value instanceof f&&this.value.template===e)this.value.update(t.values);else {const n=this.endNode.parentNode;if(S!==I&&"STYLE"===n.nodeName||"SCRIPT"===n.nodeName)return void this.__commitText("/* lit-html will not write TemplateResults to scripts and styles */");const s=new f(e,t.processor,this.options),o=s._clone();s.update(t.values),this.__commitNode(o),this.value=s;}}__commitIterable(t){Array.isArray(this.value)||(this.value=[],this.clear());const e=this.value;let n,s=0;for(const o of t)n=e[s],void 0===n&&(n=new Y(this.options,this.templatePart),e.push(n),0===s?n.appendIntoPart(this):n.insertAfterPart(e[s-1])),n.setValue(o),n.commit(),s++;s<e.length&&(e.length=s,this.clear(n&&n.endNode));}clear(t=this.startNode){i(this.startNode.parentNode,t.nextSibling,this.endNode);}}class C{constructor(t,e,n){if(this.value=void 0,this.__pendingValue=void 0,2!==n.length||""!==n[0]||""!==n[1])throw new Error("Boolean attributes can only contain a single expression");this.element=t,this.name=e,this.strings=n;}setValue(t){this.__pendingValue=t;}commit(){for(;n(this.__pendingValue);){const t=this.__pendingValue;this.__pendingValue=r,t.isClass?t.body(this):t(this);}if(this.__pendingValue===r)return;const t=!!this.__pendingValue;this.value!==t&&(t?this.element.setAttribute(this.name,""):this.element.removeAttribute(this.name),this.value=t),this.__pendingValue=r;}}class X extends A{constructor(t,e,n,s){super(t,e,n,s,"property"),this.single=2===n.length&&""===n[0]&&""===n[1];}_createPart(){return new V(this)}_getValue(){return this.single?this.parts[0].value:super._getValue()}commit(){if(this.dirty){this.dirty=!1;let t=this._getValue();t=this.sanitizer(t),this.element[this.name]=t;}}}class V extends T{}let L=!1;(()=>{try{const t={get capture(){return L=!0,!1}};window.addEventListener("test",t,t),window.removeEventListener("test",t,t);}catch(t){}})();class k{constructor(t,e,n){this.value=void 0,this.__pendingValue=void 0,this.element=t,this.eventName=e,this.eventContext=n,this.__boundHandleEvent=t=>this.handleEvent(t);}setValue(t){this.__pendingValue=t;}commit(){for(;n(this.__pendingValue);){const t=this.__pendingValue;this.__pendingValue=r,t.isClass?t.body(this):t(this);}if(this.__pendingValue===r)return;const t=this.__pendingValue,e=this.value,s=null==t||null!=e&&(t.capture!==e.capture||t.once!==e.once||t.passive!==e.passive),o=null!=t&&(null==e||s);s&&this.element.removeEventListener(this.eventName,this.__boundHandleEvent,this.__options),o&&(this.__options=D(t),this.element.addEventListener(this.eventName,this.__boundHandleEvent,this.__options)),this.value=t,this.__pendingValue=r;}handleEvent(t){"function"==typeof this.value?this.value.call(this.eventContext||this.element,t):this.value.handleEvent(t);}}const D=t=>t&&(L?{capture:t.capture,passive:t.passive,once:t.once}:t.capture)
 /**
  * @license
  * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -11047,7 +11107,7 @@ class f{constructor(t,e,n){this.__parts=[],this.template=t,this.processor=e,this
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
- */;class ${handleAttributeExpressions(t,e,n,s,o){const i=e[0];if("."===i){return new C(t,e.slice(1),n,o).parts}return "@"===i?[new k(t,e.slice(1),s.eventContext)]:"?"===i?[new I(t,e.slice(1),n)]:new T(t,e,n,o).parts}handleTextExpression(t,e){return new X(t,e)}}const z=new $;
+ */;class ${handleAttributeExpressions(t,e,n,s,o){const i=e[0];if("."===i){return new X(t,e.slice(1),n,o).parts}return "@"===i?[new k(t,e.slice(1),s.eventContext)]:"?"===i?[new C(t,e.slice(1),n)]:new A(t,e,n,o).parts}handleTextExpression(t,e){return new Y(t,e)}}const z=new $;
 /**
  * @license
  * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -11060,7 +11120,7 @@ class f{constructor(t,e,n){this.__parts=[],this.template=t,this.processor=e,this
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
- */function R(t){let e=F.get(t.type);void 0===e&&(e={stringsArray:new WeakMap,keyString:new Map},F.set(t.type,e));let n=e.stringsArray.get(t.strings);if(void 0!==n)return n;const s=t.strings.join(l);return n=e.keyString.get(s),void 0===n&&(n=new d(t,t.getTemplateElement()),e.keyString.set(s,n)),e.stringsArray.set(t.strings,n),n}const F=new Map,B=new WeakMap,W=(t,e,n)=>{let s=B.get(e);void 0===s&&(i(e,e.firstChild),B.set(e,s=new X(Object.assign({templateFactory:R},n),void 0)),s.appendInto(e)),s.setValue(t),s.commit();};
+ */function R(t){let e=F.get(t.type);void 0===e&&(e={stringsArray:new WeakMap,keyString:new Map},F.set(t.type,e));let n=e.stringsArray.get(t.strings);if(void 0!==n)return n;const s=t.strings.join(l);return n=e.keyString.get(s),void 0===n&&(n=new d(t,t.getTemplateElement()),e.keyString.set(s,n)),e.stringsArray.set(t.strings,n),n}const F=new Map,B=new WeakMap,W=(t,e,n)=>{let s=B.get(e);void 0===s&&(i(e,e.firstChild),B.set(e,s=new Y(Object.assign({templateFactory:R},n),void 0)),s.appendInto(e)),s.setValue(t),s.commit();};
 /**
  * @license
  * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -11073,9 +11133,9 @@ class f{constructor(t,e,n){this.__parts=[],this.template=t,this.processor=e,this
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
- */"undefined"!=typeof window&&(window.litHtmlVersions||(window.litHtmlVersions=[])).push("1.1.7");const U=(t,...e)=>new _(t,e,"html",z),O=(t,...e)=>new w(t,e,"svg",z);var H=Object.freeze({__proto__:null,html:U,svg:O,DefaultTemplateProcessor:$,defaultTemplateProcessor:z,directive:t,Directive:e,isDirective:n,removeNodes:i,reparentNodes:o,noChange:r,nothing:a,AttributeCommitter:T,AttributePart:Y,BooleanAttributePart:I,EventPart:k,isIterable:P,isPrimitive:N,NodePart:X,PropertyCommitter:C,PropertyPart:V,get sanitizerFactory(){return A},setSanitizerFactory:t=>{if(A!==M)throw new Error("Attempted to overwrite existing lit-html security policy. setSanitizeDOMValueFactory should be called at most once.");A=t;},parts:B,render:W,templateCaches:F,templateFactory:R,TemplateInstance:f,SVGTemplateResult:w,TemplateResult:_,createMarker:v,isTemplatePartActive:u,Template:d});
+ */"undefined"!=typeof window&&(window.litHtmlVersions||(window.litHtmlVersions=[])).push("1.1.7");const U=(t,...e)=>new _(t,e,"html",z),O=(t,...e)=>new w(t,e,"svg",z);var H=Object.freeze({__proto__:null,html:U,svg:O,DefaultTemplateProcessor:$,defaultTemplateProcessor:z,directive:t,Directive:e,isDirective:n,removeNodes:i,reparentNodes:o,noChange:r,nothing:a,AttributeCommitter:A,AttributePart:T,BooleanAttributePart:C,EventPart:k,isIterable:P,isPrimitive:N,NodePart:Y,PropertyCommitter:X,PropertyPart:V,get sanitizerFactory(){return S},setSanitizerFactory:t=>{if(S!==I)throw new Error("Attempted to overwrite existing lit-html security policy. setSanitizeDOMValueFactory should be called at most once.");S=t;},parts:B,render:W,templateCaches:F,templateFactory:R,TemplateInstance:f,SVGTemplateResult:w,TemplateResult:_,createMarker:v,isTemplatePartActive:u,Template:d});
 const ut=document.createElement("template");
-class bt{constructor(){this.isAction=!0;}}bt.prototype.isAction=!0;const _t={element:document.createTextNode(""),axis:"xy",threshold:10,onDown(t){},onMove(t){},onUp(t){},onWheel(t){}};
+class xt{constructor(){this.isAction=!0;}}xt.prototype.isAction=!0;const _t={element:document.createTextNode(""),axis:"xy",threshold:10,onDown(t){},onMove(t){},onUp(t){},onWheel(t){}};
 
 /**
  * Api functions
@@ -11247,11 +11307,10 @@ class Api {
                     actualWidth: -1,
                     detached: false,
                 };
-            if (!item.$data.time)
-                item.$data.time = {
-                    startDate: this.time.date(item.time.start),
-                    endDate: this.time.date(item.time.end),
-                };
+            item.$data.time = {
+                startDate: this.time.date(item.time.start),
+                endDate: this.time.date(item.time.end),
+            };
             item.$data.actualHeight = item.height;
             if (typeof item.top !== 'number')
                 item.top = 0;
@@ -11273,19 +11332,20 @@ class Api {
         let top = 0;
         for (const rowId in rows) {
             const row = rows[rowId];
-            row.$data = {
-                parents: [],
-                children: [],
-                position: {
-                    top: 0,
-                    topPercent: 0,
-                    bottomPercent: 0,
-                    viewTop: 0,
-                },
-                items: [],
-                actualHeight: 0,
-                outerHeight: 0,
-            };
+            if (!row.$data)
+                row.$data = {
+                    parents: [],
+                    children: [],
+                    position: {
+                        top: 0,
+                        topPercent: 0,
+                        bottomPercent: 0,
+                        viewTop: 0,
+                    },
+                    items: [],
+                    actualHeight: 0,
+                    outerHeight: 0,
+                };
             if (typeof row.height !== 'number') {
                 row.height = defaultHeight;
             }

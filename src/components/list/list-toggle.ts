@@ -65,7 +65,6 @@ export default function ListToggle(vido: Vido, props = {}) {
   }
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   return (templateProps) =>
     wrapper(

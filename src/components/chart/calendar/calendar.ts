@@ -83,7 +83,6 @@ export default function ChartCalendar(vido: Vido, props) {
   const actions = Actions.create(componentActions, actionProps);
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   return (templateProps) =>
     wrapper(

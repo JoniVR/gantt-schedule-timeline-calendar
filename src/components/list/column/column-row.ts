@@ -95,7 +95,6 @@ export default function ListColumnRow(vido: Vido, props: Props) {
   let classNameCurrent = className;
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   function onPropsChange(changedProps: Props, options) {
     if (options.leave || changedProps.row === undefined || changedProps.column === undefined) {

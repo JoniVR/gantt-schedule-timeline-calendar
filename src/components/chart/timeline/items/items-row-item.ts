@@ -150,7 +150,6 @@ export default function ChartTimelineItemsRowItem(vido: Vido, props: Props) {
   `;
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   onChange(function onPropsChange(changedProps, options) {
     if (options.leave || changedProps.row === undefined || changedProps.item === undefined) {
@@ -202,12 +201,16 @@ export default function ChartTimelineItemsRowItem(vido: Vido, props: Props) {
     return unsafeHTML(props.item.label);
   }
 
+  function getTitle() {
+    return props.item.isHTML || typeof props.item.label === 'function' ? '' : props.item.label;
+  }
+
   return (templateProps) =>
     wrapper(
       html`
         <div detach=${detach} class=${classNameCurrent} data-actions=${actions} style=${styleMap}>
           ${cutterLeft()}${slots.html('before', templateProps)}
-          <div class=${labelClassName} title=${props.item.isHTML ? null : props.item.label}>
+          <div class=${labelClassName} title=${getTitle()}>
             ${slots.html('inside', templateProps)}${props.item.isHTML ? getHtml() : getText()}
           </div>
           ${slots.html('after', templateProps)}${cutterRight()}

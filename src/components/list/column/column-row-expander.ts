@@ -47,7 +47,6 @@ export default function ListColumnRowExpander(vido: Vido, props: Props) {
   );
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   if (props.row) {
     function onPropsChange(changedProps) {

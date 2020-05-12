@@ -1,56 +1,45 @@
-import { SlotName, Vido, SlotPlacement } from '../gstc';
-import { ComponentInstance, lithtml, Component } from '@neuronet.io/vido/vido.d';
+import { Vido } from '../gstc';
+import { Slots as VidoSlots } from '@neuronet.io/vido/Slots';
+import { ComponentInstance, Component } from '@neuronet.io/vido/vido.d';
 
 export type SlotInstances = {
-  [placement in SlotPlacement]: ComponentInstance[];
+  [key: string]: ComponentInstance[];
 };
 
-export function generateSlots(name: SlotName, vido: Vido, props?: unknown) {
-  let slots: SlotInstances = {
-    before: [],
-    inside: [],
-    after: [],
-  };
+export interface SlotStorage {
+  [key: string]: Component[];
+}
 
-  for (const slotPlacement in slots) {
-    vido.onDestroy(
-      vido.state.subscribe(`config.slots.${name}.${slotPlacement}`, (slotsComponents: Component[]) => {
-        for (const instance of slots[slotPlacement]) {
-          instance.destroy();
-        }
-        slots[slotPlacement].length = 0;
-        for (const component of slotsComponents) {
-          slots[slotPlacement].push(vido.createComponent(component, props));
-        }
-      })
+export class Slots extends VidoSlots {
+  private name: string;
+  private subs = [];
+
+  constructor(name: string, vido: Vido, props: unknown) {
+    super(vido, props);
+    this.name = name;
+    this.subs.push(
+      vido.state.subscribe(
+        `config.slots.${name}`,
+        this.setComponents,
+        // execute all neccesary jobs update view and then update slots - move this job at the end
+        // because state update come first always and then components might be destroyed
+        // so we are waiting to know if we need to create slot components or parent component is destroyed
+        // and we should not create new slots
+        { queue: true }
+      )
     );
   }
 
-  return {
-    destroy(): void {
-      for (const slotPlacement in slots) {
-        for (const instance of slots[slotPlacement]) {
-          instance.destroy();
-        }
-        slots[slotPlacement].length = 0;
-      }
-    },
+  public destroy() {
+    this.subs.forEach((unsub) => unsub());
+    super.destroy();
+  }
 
-    change(changedProps: unknown, options = undefined): void {
-      for (const slotPlacement in slots) {
-        const instances = slots[slotPlacement] as ComponentInstance[];
-        for (const slot of instances) {
-          slot.change(changedProps, options);
-        }
-      }
-    },
+  public getName() {
+    return this.name;
+  }
+}
 
-    get(placement: SlotPlacement): ComponentInstance[] {
-      return slots[placement];
-    },
-
-    html(placement: SlotPlacement, templateProps?: unknown): lithtml.TemplateResult[] {
-      return slots[placement].map((instance) => instance.html(templateProps));
-    },
-  };
+export function generateSlots(name: string, vido: Vido, props: unknown) {
+  return new Slots(name, vido, props);
 }

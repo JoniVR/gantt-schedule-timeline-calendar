@@ -92,7 +92,6 @@ export default function ChartCalendarDay(vido: Vido, props: Props) {
   const detach = new Detach(() => shouldDetach);
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   let timeSub;
   const actionProps = { date: props.date, period: props.period, api, state };

@@ -94,7 +94,6 @@ export default function ListColumn(vido: Vido, props: Props) {
   onDestroy(ListColumnHeader.destroy);
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   onChange((changedProps) => {
     props = changedProps;

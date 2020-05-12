@@ -68,9 +68,13 @@ export default function Main(vido: Vido, props = {}) {
   componentSubs.push(state.subscribe('config.components.Chart', (value) => (ChartComponent = value)));
 
   const List: ComponentInstance = createComponent(ListComponent);
-  onDestroy(List.destroy);
+  onDestroy(() => {
+    if (List) List.destroy();
+  });
   const Chart: ComponentInstance = createComponent(ChartComponent);
-  onDestroy(Chart.destroy);
+  onDestroy(() => {
+    if (Chart) Chart.destroy();
+  });
 
   onDestroy(() => {
     componentSubs.forEach((unsub) => unsub());

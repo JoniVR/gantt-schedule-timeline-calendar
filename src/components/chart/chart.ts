@@ -89,7 +89,6 @@ export default function Chart(vido: Vido, props = {}) {
   const actions = Actions.create(componentActions, { api, state });
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   return (templateProps) =>
     wrapper(

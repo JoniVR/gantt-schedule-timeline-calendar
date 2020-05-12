@@ -38,7 +38,6 @@ export default function ListColumnHeaderResizer(vido: Vido, props: Props) {
   );
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   function updateData() {
     if (!props.column) return;

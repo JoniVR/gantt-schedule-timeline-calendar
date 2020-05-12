@@ -223,18 +223,18 @@
           items,
         },
         slots: {
-          'chart-timeline-items-row-item': {
-            before: [
-              function ItemSlot(vido, props = {}) {
-                const { html, onChange, StyleMap } = vido;
-                onChange((changedProps) => {
-                  props = changedProps;
-                });
-                const styleMap = new StyleMap({ 'margin-left': '8px' });
-                return (templateProps) => html`<div style=${styleMap}>(id:${props.item.id})</div>`;
-              },
-            ],
-          },
+          // 'chart-timeline-items-row-item': {
+          //   before: [
+          //     function ItemSlot(vido, props = {}) {
+          //       const { html, onChange, StyleMap } = vido;
+          //       onChange((changedProps) => {
+          //         props = changedProps;
+          //       });
+          //       const styleMap = new StyleMap({ 'margin-left': '8px' });
+          //       return (templateProps) => html`<div style=${styleMap}>(id:${props.item.id})</div>`;
+          //     },
+          //   ],
+          // },
           'chart-timeline-grid-row-cell': {
             inside: [
               function GridCellSlot(vido, props = {}) {

@@ -120,7 +120,6 @@ export default function List(vido: Vido, props = {}) {
   const actions = Actions.create(componentActions, { ...props, api, state });
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   return (templateProps) =>
     wrapper(

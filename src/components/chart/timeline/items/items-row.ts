@@ -121,7 +121,6 @@ export default function ChartTimelineItemsRow(vido: Vido, props: Props) {
   );
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   onChange(function onPropsChange(changedProps: Props, options) {
     if (options.leave || changedProps.row === undefined) {

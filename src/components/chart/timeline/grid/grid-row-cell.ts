@@ -70,7 +70,6 @@ function ChartTimelineGridRowCell(vido: Vido, props: Props) {
   );
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   let className;
   function updateClassName(time) {

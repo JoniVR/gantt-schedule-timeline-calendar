@@ -46,7 +46,6 @@ export default function ListColumnRowExpanderToggle(vido: Vido, props: Props) {
   );
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   function expandedChangeRow(isExpanded) {
     expanded = isExpanded;

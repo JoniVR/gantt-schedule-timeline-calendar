@@ -27,7 +27,9 @@ export default function ChartTimeline(vido: Vido, props) {
       Grid = createComponent(component);
     })
   );
-  onDestroy(Grid.destroy);
+  onDestroy(() => {
+    if (Grid) Grid.destroy();
+  });
 
   let Items: ComponentInstance;
   onDestroy(
@@ -36,7 +38,9 @@ export default function ChartTimeline(vido: Vido, props) {
       Items = createComponent(component);
     })
   );
-  onDestroy(Items.destroy);
+  onDestroy(() => {
+    if (Items) Items.destroy();
+  });
 
   let ListToggle: ComponentInstance;
   onDestroy(
@@ -45,10 +49,11 @@ export default function ChartTimeline(vido: Vido, props) {
       ListToggle = createComponent(component);
     })
   );
-  onDestroy(ListToggle.destroy);
+  onDestroy(() => {
+    if (ListToggle) ListToggle.destroy();
+  });
 
   const slots = api.generateSlots(componentName, vido, props);
-  onDestroy(slots.destroy);
 
   let className, classNameInner;
   onDestroy(
