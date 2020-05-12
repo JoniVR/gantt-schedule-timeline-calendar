@@ -215,7 +215,6 @@ class TimelinePointer {
 function Plugin(options) {
     return function initialize(vidoInstance) {
         const currentOptions = vidoInstance.state.get(pluginPath);
-        console.log(currentOptions);
         if (currentOptions) {
             options = mergeDeep(mergeDeep({}, options), currentOptions);
         }
