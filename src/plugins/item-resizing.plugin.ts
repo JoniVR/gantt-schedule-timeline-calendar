@@ -11,10 +11,10 @@
 import { Vido, Wrapper, htmlResult, Item, DataChartTime, Row } from '../gstc';
 import DeepState from 'deep-state-observer';
 import { Api, getClass } from '../api/api';
-import { lithtml } from '@neuronet.io/vido/vido';
+import { lithtml } from '@neuronet.io/vido/src/vido';
 import { Point, ITEM } from './timeline-pointer.plugin';
 import { Dayjs } from 'dayjs';
-import { mergeDeep } from '@neuronet.io/vido/helpers';
+import { mergeDeep } from '@neuronet.io/vido/src/helpers';
 
 export interface Handle {
   width?: number;

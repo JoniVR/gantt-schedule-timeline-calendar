@@ -8,10 +8,10 @@
  * @link      https://github.com/neuronetio/gantt-schedule-timeline-calendar
  */
 
-import Action from '@neuronet.io/vido/Action';
+import Action from '@neuronet.io/vido/src/Action';
 import { Api } from '../api/api';
 import { Vido } from '../gstc';
-import { mergeDeep } from '@neuronet.io/vido/helpers';
+import { mergeDeep } from '@neuronet.io/vido/src/helpers';
 
 export interface Options {
   weekdays?: number[];

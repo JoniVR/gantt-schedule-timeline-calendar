@@ -7,7 +7,7 @@
  * @license   AGPL-3.0
  */
 
-import helpers from '@neuronet.io/vido/helpers';
+import helpers from '@neuronet.io/vido/src/helpers';
 import Main from './components/main';
 import ScrollBar from './components/scroll-bar';
 import List from './components/list/list';

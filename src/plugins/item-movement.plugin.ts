@@ -14,7 +14,7 @@ import { ITEM, Point } from './timeline-pointer.plugin';
 import { Dayjs } from 'dayjs';
 import { Api } from '../api/api';
 import DeepState from 'deep-state-observer';
-import { mergeDeep } from '@neuronet.io/vido/helpers';
+import { mergeDeep } from '@neuronet.io/vido/src/helpers';
 
 export interface SnapArg {
   item: Item;

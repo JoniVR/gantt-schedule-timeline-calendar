@@ -30,7 +30,7 @@ import {
 } from '../gstc';
 import { generateSlots } from './slots';
 import { lithtml } from '@neuronet.io/vido';
-import helpers from '@neuronet.io/vido/helpers';
+import helpers from '@neuronet.io/vido/src/helpers';
 const mergeDeep = helpers.mergeDeep;
 
 const lib = 'gantt-schedule-timeline-calendar';

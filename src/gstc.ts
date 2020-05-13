@@ -8,8 +8,8 @@
  */
 
 import 'pepjs';
-import Vido from '@neuronet.io/vido/vido';
-import { vido, lithtml, ComponentInstance } from '@neuronet.io/vido/vido.d';
+import Vido from '@neuronet.io/vido/src/vido';
+import { vido, lithtml, ComponentInstance } from '@neuronet.io/vido/src/vido.d';
 import { publicApi, Api } from './api/api';
 import { Dayjs, OpUnitType } from 'dayjs';
 import { Properties as CSSProps } from 'csstype';
@@ -704,7 +704,7 @@ function GSTC(options: GSTCOptions): GSTCResult {
     };
   });
 
-  const vido: Vido = Vido(state, api);
+  const vido: Vido = Vido<DeepState, Api>(state, api);
   api.setVido(vido);
   const Main = state.get('config.components.Main');
   const component = vido.createApp({ component: Main, props: {}, element: options.element });

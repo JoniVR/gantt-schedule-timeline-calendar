@@ -11012,14 +11012,15 @@
 
 	class Slots$1 extends Slots {
 	    constructor(name, vido, props) {
+	        // @ts-ignore
 	        super(vido, props);
 	        this.subs = [];
 	        this.name = name;
 	        this.subs.push(vido.state.subscribe(`config.slots.${name}`, this.setComponents, 
-	        // execute all neccesary jobs update view and then update slots - move this job at the end
-	        // because state update come first always and then components might be destroyed
+	        // execute all neccesary jobs and then update slots - move this job at the end
+	        // because state update come always first and then components might be destroyed
 	        // so we are waiting to know if we need to create slot components or parent component is destroyed
-	        // and we should not create new slots
+	        // and we should not create any new slots
 	        { queue: true }));
 	    }
 	    destroy() {

@@ -8,7 +8,7 @@
  * @link      https://github.com/neuronetio/gantt-schedule-timeline-calendar
  */
 
-import Action from '@neuronet.io/vido/Action';
+import Action from '@neuronet.io/vido/src/Action';
 import { ScrollType, Row, Vido, DataChartTimeLevelDate, DataChartTime } from '../gstc';
 
 export interface Props {

@@ -11,7 +11,7 @@
 import DeepState from 'deep-state-observer';
 import { Api } from '../api/api';
 import { Vido } from '../gstc';
-import { mergeDeep } from '@neuronet.io/vido/helpers';
+import { mergeDeep } from '@neuronet.io/vido/src/helpers';
 
 export const CELL = 'chart-timeline-grid-row-cell';
 export type CELL_TYPE = 'chart-timeline-grid-row-cell';

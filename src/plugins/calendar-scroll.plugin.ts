@@ -11,7 +11,7 @@
 import { ScrollTypeHorizontal, Vido, Scroll } from '../gstc';
 import DeepState from 'deep-state-observer';
 import { Api } from '../api/api';
-import { mergeDeep } from '@neuronet.io/vido/helpers';
+import { mergeDeep } from '@neuronet.io/vido/src/helpers';
 
 export interface Point {
   x: number;
