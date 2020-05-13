@@ -1,5 +1,5 @@
 import 'pepjs';
-import { vido, lithtml, ComponentInstance } from '@neuronet.io/vido/src/vido.d';
+import { vido, lithtml, ComponentInstance } from '@neuronet.io/vido/src/vido';
 import { Api } from './api/api';
 import { Dayjs, OpUnitType } from 'dayjs';
 import { Properties as CSSProps } from 'csstype';
@@ -525,7 +525,7 @@ declare namespace GSTC {
         stateFromConfig: typeof import("./api/api").stateFromConfig;
         wasmStateFromConfig: typeof import("./api/api").wasmStateFromConfig;
         merge: typeof import("@neuronet.io/vido/src/helpers").mergeDeep;
-        lithtml: any;
+        lithtml: typeof lithtml;
         date(time: any): Dayjs;
         setPeriod(period: OpUnitType): number;
         dayjs: typeof import("dayjs");

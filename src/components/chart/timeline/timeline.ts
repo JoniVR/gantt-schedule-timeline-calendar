@@ -9,7 +9,7 @@
  */
 
 import { Vido } from '../../../gstc';
-import { ComponentInstance, Component } from '@neuronet.io/vido/src/vido.d';
+import { ComponentInstance, Component } from '@neuronet.io/vido/src/vido';
 
 export default function ChartTimeline(vido: Vido, props) {
   const { api, state, onDestroy, Action, Actions, update, html, createComponent, StyleMap } = vido;

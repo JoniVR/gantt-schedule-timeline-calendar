@@ -9,7 +9,7 @@
 
 import 'pepjs';
 import Vido from '@neuronet.io/vido/src/vido';
-import { vido, lithtml, ComponentInstance } from '@neuronet.io/vido/src/vido.d';
+import { vido, lithtml, ComponentInstance } from '@neuronet.io/vido/src/vido';
 import { publicApi, Api } from './api/api';
 import { Dayjs, OpUnitType } from 'dayjs';
 import { Properties as CSSProps } from 'csstype';

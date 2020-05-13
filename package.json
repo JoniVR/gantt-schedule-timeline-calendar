@@ -4,13 +4,14 @@
   "description": "Gantt, Schedule, Timeline, Calendar components all in one!",
   "main": "dist/gstc.umd.js",
   "module": "dist/gstc.esm.js",
+  "types": "types/global.d.ts",
   "scripts": {
-    "dev": "run-p autobuild autotypes start:dev",
+    "dev": "run-p autobuild start:dev",
     "build": "run-p types build-dist",
     "build-dist": "rollup -c",
     "autobuild": "rollup -c -w",
-    "types": "tsc -p ./types.json",
-    "autotypes": "tsc -p ./types.json -w",
+    "types": "tsc -p ./tsconfig.types.json && tsc -p ./tsconfig.global.json",
+    "autotypes": "tsc -p ./tsconfig.types.json -w",
     "start": "sirv dist --single",
     "start:dev": "sirv dist --single --dev",
     "test": "nightwatch --env chrome && nightwatch --env firefox"
@@ -22,7 +23,7 @@
   "author": "Rafal Pospiech <neuronet.io@gmail.com>",
   "license": "AGPL-3.0",
   "dependencies": {
-    "@neuronet.io/vido": "^3.0.4",
+    "@neuronet.io/vido": "^3.0.5",
     "dayjs": "^1.8.24",
     "deep-state-observer": "^3.16.0",
     "pepjs": "^0.5.2",

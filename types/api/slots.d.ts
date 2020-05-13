@@ -1,6 +1,6 @@
 import { Vido } from '../gstc';
 import { Slots as VidoSlots } from '@neuronet.io/vido/src/Slots';
-import { ComponentInstance, Component } from '@neuronet.io/vido/src/vido.d';
+import { ComponentInstance, Component } from '@neuronet.io/vido/types/vido.d';
 export declare type SlotInstances = {
     [key: string]: ComponentInstance[];
 };

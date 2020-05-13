@@ -29,7 +29,7 @@ import {
   Rows,
 } from '../gstc';
 import { generateSlots } from './slots';
-import { lithtml } from '@neuronet.io/vido';
+import { lithtml } from '@neuronet.io/vido/src/vido';
 import helpers from '@neuronet.io/vido/src/helpers';
 const mergeDeep = helpers.mergeDeep;
 

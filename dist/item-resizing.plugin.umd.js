@@ -1033,20 +1033,17 @@
    * subject to an additional IP rights grant found at
    * http://polymer.github.io/PATENTS.txt
    */
-  const t=t=>(...e)=>{const n=t(...e);return n.isDirective=!0,n};class e{constructor(){this.isDirective=!0,this.isClass=!0;}body(t){}}const n=t=>null!=t&&"boolean"==typeof t.isDirective,s="undefined"!=typeof window&&(null!=window.customElements&&void 0!==window.customElements.polyfillWrapFlushCallback),o=(t,e,n=null,s=null)=>{for(;e!==n;){const n=e.nextSibling;t.insertBefore(e,s),e=n;}},i=(t,e,n=null)=>{for(;e!==n;){const n=e.nextSibling;t.removeChild(e),e=n;}},r={},a={},l=`{{lit-${String(Math.random()).slice(2)}}}`,c=`\x3c!--${l}--\x3e`,h=new RegExp(`${l}|${c}`);
   /**
-   * @license
-   * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
-   * This code may only be used under the BSD style license found at
-   * http://polymer.github.io/LICENSE.txt
-   * The complete set of authors may be found at
-   * http://polymer.github.io/AUTHORS.txt
-   * The complete set of contributors may be found at
-   * http://polymer.github.io/CONTRIBUTORS.txt
-   * Code distributed by Google as part of the polymer project is also
-   * subject to an additional IP rights grant found at
-   * http://polymer.github.io/PATENTS.txt
-   */class d{constructor(t,e){this.parts=[],this.element=e;const n=[],s=[],o=document.createTreeWalker(e.content,133,null,!1);let i=0,r=-1,a=0;const{strings:c,values:{length:d}}=t;for(;a<d;){const t=o.nextNode();if(null!==t){if(r++,1===t.nodeType){if(t.hasAttributes()){const e=t.attributes,{length:n}=e;let s=0;for(let t=0;t<n;t++)p(e[t].name,"$lit$")&&s++;for(;s-- >0;){const e=c[a],n=g.exec(e)[2],s=n.toLowerCase()+"$lit$",o=t.getAttribute(s);t.removeAttribute(s);const i=o.split(h);this.parts.push({type:"attribute",index:r,name:n,strings:i,sanitizer:void 0}),a+=i.length-1;}}"TEMPLATE"===t.tagName&&(s.push(t),o.currentNode=t.content);}else if(3===t.nodeType){const e=t.data;if(e.indexOf(l)>=0){const s=t.parentNode,o=e.split(h),i=o.length-1;for(let e=0;e<i;e++){let n,i=o[e];if(""===i)n=v();else {const t=g.exec(i);null!==t&&p(t[2],"$lit$")&&(i=i.slice(0,t.index)+t[1]+t[2].slice(0,-"$lit$".length)+t[3]),n=document.createTextNode(i);}s.insertBefore(n,t),this.parts.push({type:"node",index:++r});}""===o[i]?(s.insertBefore(v(),t),n.push(t)):t.data=o[i],a+=i;}}else if(8===t.nodeType)if(t.data===l){const e=t.parentNode;null!==t.previousSibling&&r!==i||(r++,e.insertBefore(v(),t)),i=r,this.parts.push({type:"node",index:r}),null===t.nextSibling?t.data="":(n.push(t),r--),a++;}else {let e=-1;for(;-1!==(e=t.data.indexOf(l,e+1));)this.parts.push({type:"node",index:-1}),a++;}}else o.currentNode=s.pop();}for(const t of n)t.parentNode.removeChild(t);}}const p=(t,e)=>{const n=t.length-e.length;return n>=0&&t.slice(n)===e},u=t=>-1!==t.index,m=document.createComment(""),v=()=>m.cloneNode(),g=/([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
+   * An expression marker with embedded unique key to avoid collision with
+   * possible text in templates.
+   */
+  const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
+  /**
+   * Used to clone existing node instead of each time creating new one which is
+   * slower
+   */
+  const markerNode = document.createComment('');
+
   /**
    * @license
    * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -1060,7 +1057,12 @@
    * subject to an additional IP rights grant found at
    * http://polymer.github.io/PATENTS.txt
    */
-  class f{constructor(t,e,n){this.__parts=[],this.template=t,this.processor=e,this.options=n;}update(t){let e=0;for(const n of this.__parts)void 0!==n&&n.setValue(t[e]),e++;for(const t of this.__parts)void 0!==t&&t.commit();}_clone(){const t=s?this.template.element.content.cloneNode(!0):document.importNode(this.template.element.content,!0),e=[],n=this.template.parts,o=document.createTreeWalker(t,133,null,!1);let i,r=0,a=0,l=o.nextNode();for(;r<n.length;)if(i=n[r],u(i)){for(;a<i.index;)a++,"TEMPLATE"===l.nodeName&&(e.push(l),o.currentNode=l.content),null===(l=o.nextNode())&&(o.currentNode=e.pop(),l=o.nextNode());if("node"===i.type){const t=this.processor.handleTextExpression(this.options,i);t.insertAfterNode(l.previousSibling),this.__parts.push(t);}else this.__parts.push(...this.processor.handleAttributeExpressions(l,i.name,i.strings,this.options,i));r++;}else this.__parts.push(void 0),r++;return s&&(document.adoptNode(t),customElements.upgrade(t)),t}}
+  /**
+   * Used to clone existing node instead of each time creating new one which is
+   * slower
+   */
+  const emptyTemplateNode = document.createElement('template');
+
   /**
    * @license
    * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -1073,7 +1075,36 @@
    * Code distributed by Google as part of the polymer project is also
    * subject to an additional IP rights grant found at
    * http://polymer.github.io/PATENTS.txt
-   */let y;const b=` ${l} `,x=document.createElement("template");class _{constructor(t,e,n,s){this.strings=t,this.values=e,this.type=n,this.processor=s;}getHTML(){const t=this.strings.length-1;let e="",n=!1;for(let s=0;s<t;s++){const t=this.strings[s],o=t.lastIndexOf("\x3c!--");n=(o>-1||n)&&-1===t.indexOf("--\x3e",o+1);const i=g.exec(t);e+=null===i?t+(n?b:c):t.substr(0,i.index)+i[1]+i[2]+"$lit$"+i[3]+l;}return e+=this.strings[t],e}getTemplateElement(){const t=x.cloneNode();return t.innerHTML=function(t){const e=window,n=e.trustedTypes||e.TrustedTypes;return n&&!y&&(y=n.createPolicy("lit-html",{createHTML:t=>t})),y?y.createHTML(t):t}(this.getHTML()),t}}class w extends _{getHTML(){return `<svg>${super.getHTML()}</svg>`}getTemplateElement(){const t=super.getTemplateElement(),e=t.content,n=e.firstChild;return e.removeChild(n),o(e,n.firstChild),t}}
+   */
+  /**
+   * Used to clone text node instead of each time creating new one which is slower
+   */
+  const emptyTextNode = document.createTextNode('');
+  // Detect event listener options support. If the `capture` property is read
+  // from the options object, then options are supported. If not, then the third
+  // argument to add/removeEventListener is interpreted as the boolean capture
+  // value so we should only pass the `capture` property.
+  let eventOptionsSupported = false;
+  // Wrap into an IIFE because MS Edge <= v41 does not support having try/catch
+  // blocks right into the body of a module
+  (() => {
+      try {
+          const options = {
+              get capture() {
+                  eventOptionsSupported = true;
+                  return false;
+              }
+          };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          window.addEventListener('test', options, options);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          window.removeEventListener('test', options, options);
+      }
+      catch (_e) {
+          // noop
+      }
+  })();
+
   /**
    * @license
    * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -1086,7 +1117,16 @@
    * Code distributed by Google as part of the polymer project is also
    * subject to an additional IP rights grant found at
    * http://polymer.github.io/PATENTS.txt
-   */const N=t=>null===t||!("object"==typeof t||"function"==typeof t),P=t=>Array.isArray(t)||!(!t||!t[Symbol.iterator]),E=t=>t,I=(t,e,n)=>E;let S=I;const M=document.createTextNode("");class A{constructor(t,e,n,s,o="attribute"){this.dirty=!0,this.element=t,this.name=e,this.strings=n,this.parts=[];let i=s&&s.sanitizer;void 0===i&&(i=S(t,e,o),void 0!==s&&(s.sanitizer=i)),this.sanitizer=i;for(let t=0;t<n.length-1;t++)this.parts[t]=this._createPart();}_createPart(){return new T(this)}_getValue(){const t=this.strings,e=this.parts,n=t.length-1;if(1===n&&""===t[0]&&""===t[1]&&void 0!==e[0]){const t=e[0].value;if(!P(t))return t}let s="";for(let o=0;o<n;o++){s+=t[o];const n=e[o];if(void 0!==n){const t=n.value;if(N(t)||!P(t))s+="string"==typeof t?t:String(t);else for(const e of t)s+="string"==typeof e?e:String(e);}}return s+=t[n],s}commit(){if(this.dirty){this.dirty=!1;let t=this._getValue();t=this.sanitizer(t),"symbol"==typeof t&&(t=String(t)),this.element.setAttribute(this.name,t);}}}class T{constructor(t){this.value=void 0,this.committer=t;}setValue(t){t===r||N(t)&&t===this.value||(this.value=t,n(t)||(this.committer.dirty=!0));}commit(){for(;n(this.value);){const t=this.value;this.value=r,t.isClass?t.body(this):t(this);}this.value!==r&&this.committer.commit();}}class Y{constructor(t,e){this.value=void 0,this.__pendingValue=void 0,this.textSanitizer=void 0,this.options=t,this.templatePart=e;}appendInto(t){this.startNode=t.appendChild(v()),this.endNode=t.appendChild(v());}insertAfterNode(t){this.startNode=t,this.endNode=t.nextSibling;}appendIntoPart(t){t.__insert(this.startNode=v()),t.__insert(this.endNode=v());}insertAfterPart(t){t.__insert(this.startNode=v()),this.endNode=t.endNode,t.endNode=this.startNode;}setValue(t){this.__pendingValue=t;}commit(){for(;n(this.__pendingValue);){const t=this.__pendingValue;this.__pendingValue=r,t.isClass?t.body(this):t(this);}const t=this.__pendingValue;t!==r&&(N(t)?t!==this.value&&this.__commitText(t):t instanceof _?this.__commitTemplateResult(t):t instanceof Node?this.__commitNode(t):P(t)?this.__commitIterable(t):t===a?(this.value=a,this.clear()):this.__commitText(t));}__insert(t){this.endNode.parentNode.insertBefore(t,this.endNode);}__commitNode(t){this.value!==t&&(this.clear(),this.__insert(t),this.value=t);}__commitText(t){const e=this.startNode.nextSibling;if(t=null==t?"":t,e===this.endNode.previousSibling&&3===e.nodeType){void 0===this.textSanitizer&&(this.textSanitizer=S(e,"data","property"));const n=this.textSanitizer(t);e.data="string"==typeof n?n:String(n);}else {const e=M.cloneNode();this.__commitNode(e),void 0===this.textSanitizer&&(this.textSanitizer=S(e,"data","property"));const n=this.textSanitizer(t);e.data="string"==typeof n?n:String(n);}this.value=t;}__commitTemplateResult(t){const e=this.options.templateFactory(t);if(this.value instanceof f&&this.value.template===e)this.value.update(t.values);else {const n=this.endNode.parentNode;if(S!==I&&"STYLE"===n.nodeName||"SCRIPT"===n.nodeName)return void this.__commitText("/* lit-html will not write TemplateResults to scripts and styles */");const s=new f(e,t.processor,this.options),o=s._clone();s.update(t.values),this.__commitNode(o),this.value=s;}}__commitIterable(t){Array.isArray(this.value)||(this.value=[],this.clear());const e=this.value;let n,s=0;for(const o of t)n=e[s],void 0===n&&(n=new Y(this.options,this.templatePart),e.push(n),0===s?n.appendIntoPart(this):n.insertAfterPart(e[s-1])),n.setValue(o),n.commit(),s++;s<e.length&&(e.length=s,this.clear(n&&n.endNode));}clear(t=this.startNode){i(this.startNode.parentNode,t.nextSibling,this.endNode);}}class C{constructor(t,e,n){if(this.value=void 0,this.__pendingValue=void 0,2!==n.length||""!==n[0]||""!==n[1])throw new Error("Boolean attributes can only contain a single expression");this.element=t,this.name=e,this.strings=n;}setValue(t){this.__pendingValue=t;}commit(){for(;n(this.__pendingValue);){const t=this.__pendingValue;this.__pendingValue=r,t.isClass?t.body(this):t(this);}if(this.__pendingValue===r)return;const t=!!this.__pendingValue;this.value!==t&&(t?this.element.setAttribute(this.name,""):this.element.removeAttribute(this.name),this.value=t),this.__pendingValue=r;}}class X extends A{constructor(t,e,n,s){super(t,e,n,s,"property"),this.single=2===n.length&&""===n[0]&&""===n[1];}_createPart(){return new V(this)}_getValue(){return this.single?this.parts[0].value:super._getValue()}commit(){if(this.dirty){this.dirty=!1;let t=this._getValue();t=this.sanitizer(t),this.element[this.name]=t;}}}class V extends T{}let L=!1;(()=>{try{const t={get capture(){return L=!0,!1}};window.addEventListener("test",t,t),window.removeEventListener("test",t,t);}catch(t){}})();class k{constructor(t,e,n){this.value=void 0,this.__pendingValue=void 0,this.element=t,this.eventName=e,this.eventContext=n,this.__boundHandleEvent=t=>this.handleEvent(t);}setValue(t){this.__pendingValue=t;}commit(){for(;n(this.__pendingValue);){const t=this.__pendingValue;this.__pendingValue=r,t.isClass?t.body(this):t(this);}if(this.__pendingValue===r)return;const t=this.__pendingValue,e=this.value,s=null==t||null!=e&&(t.capture!==e.capture||t.once!==e.once||t.passive!==e.passive),o=null!=t&&(null==e||s);s&&this.element.removeEventListener(this.eventName,this.__boundHandleEvent,this.__options),o&&(this.__options=D(t),this.element.addEventListener(this.eventName,this.__boundHandleEvent,this.__options)),this.value=t,this.__pendingValue=r;}handleEvent(t){"function"==typeof this.value?this.value.call(this.eventContext||this.element,t):this.value.handleEvent(t);}}const D=t=>t&&(L?{capture:t.capture,passive:t.passive,once:t.once}:t.capture)
+   */
+  // IMPORTANT: do not change the property name or the assignment expression.
+  // This line will be used in regexes to search for lit-html usage.
+  // TODO(justinfagnani): inject version number at build time
+  const isBrowser$1 = typeof window !== 'undefined';
+  if (isBrowser$1) {
+      // If we run in the browser set version
+      (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.1.7');
+  }
+
   /**
    * @license
    * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -1099,7 +1139,15 @@
    * Code distributed by Google as part of the polymer project is also
    * subject to an additional IP rights grant found at
    * http://polymer.github.io/PATENTS.txt
-   */;class ${handleAttributeExpressions(t,e,n,s,o){const i=e[0];if("."===i){return new X(t,e.slice(1),n,o).parts}return "@"===i?[new k(t,e.slice(1),s.eventContext)]:"?"===i?[new C(t,e.slice(1),n)]:new A(t,e,n,o).parts}handleTextExpression(t,e){return new Y(t,e)}}const z=new $;
+   */
+  var __asyncValues = (undefined && undefined.__asyncValues) || function (o) {
+      if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+      var m = o[Symbol.asyncIterator], i;
+      return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+      function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+      function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+  };
+
   /**
    * @license
    * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -1112,7 +1160,15 @@
    * Code distributed by Google as part of the polymer project is also
    * subject to an additional IP rights grant found at
    * http://polymer.github.io/PATENTS.txt
-   */function R(t){let e=F.get(t.type);void 0===e&&(e={stringsArray:new WeakMap,keyString:new Map},F.set(t.type,e));let n=e.stringsArray.get(t.strings);if(void 0!==n)return n;const s=t.strings.join(l);return n=e.keyString.get(s),void 0===n&&(n=new d(t,t.getTemplateElement()),e.keyString.set(s,n)),e.stringsArray.set(t.strings,n),n}const F=new Map,B=new WeakMap,W=(t,e,n)=>{let s=B.get(e);void 0===s&&(i(e,e.firstChild),B.set(e,s=new Y(Object.assign({templateFactory:R},n),void 0)),s.appendInto(e)),s.setValue(t),s.commit();};
+   */
+  var __asyncValues$1 = (undefined && undefined.__asyncValues) || function (o) {
+      if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+      var m = o[Symbol.asyncIterator], i;
+      return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+      function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+      function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+  };
+
   /**
    * @license
    * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -1125,9 +1181,22 @@
    * Code distributed by Google as part of the polymer project is also
    * subject to an additional IP rights grant found at
    * http://polymer.github.io/PATENTS.txt
-   */"undefined"!=typeof window&&(window.litHtmlVersions||(window.litHtmlVersions=[])).push("1.1.7");const U=(t,...e)=>new _(t,e,"html",z),O=(t,...e)=>new w(t,e,"svg",z);var H=Object.freeze({__proto__:null,html:U,svg:O,DefaultTemplateProcessor:$,defaultTemplateProcessor:z,directive:t,Directive:e,isDirective:n,removeNodes:i,reparentNodes:o,noChange:r,nothing:a,AttributeCommitter:A,AttributePart:T,BooleanAttributePart:C,EventPart:k,isIterable:P,isPrimitive:N,NodePart:Y,PropertyCommitter:X,PropertyPart:V,get sanitizerFactory(){return S},setSanitizerFactory:t=>{if(S!==I)throw new Error("Attempted to overwrite existing lit-html security policy. setSanitizeDOMValueFactory should be called at most once.");S=t;},parts:B,render:W,templateCaches:F,templateFactory:R,TemplateInstance:f,SVGTemplateResult:w,TemplateResult:_,createMarker:v,isTemplatePartActive:u,Template:d});
-  const ut=document.createElement("template");
-  class xt{constructor(){this.isAction=!0;}}xt.prototype.isAction=!0;const _t={element:document.createTextNode(""),axis:"xy",threshold:10,onDown(t){},onMove(t){},onUp(t){},onWheel(t){}};
+   */
+  /**
+   * Used to clone existing node instead of each time creating new one which is
+   * slower
+   */
+  const emptyTemplateNode$1 = document.createElement('template');
+
+  const defaultOptions = {
+      element: document.createTextNode(''),
+      axis: 'xy',
+      threshold: 10,
+      onDown(data) { },
+      onMove(data) { },
+      onUp(data) { },
+      onWheel(data) { }
+  };
 
   /**
    * Api functions

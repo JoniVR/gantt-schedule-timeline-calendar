@@ -30,7 +30,7 @@ import {
   Scroll,
 } from '../gstc';
 
-import { Component, ComponentInstance } from '@neuronet.io/vido/src/vido.d';
+import { Component, ComponentInstance } from '@neuronet.io/vido/src/vido';
 
 export default function Main(vido: Vido, props = {}) {
   const { api, state, onDestroy, Actions, update, createComponent, html, StyleMap } = vido;
