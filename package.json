@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "run-p autobuild start",
     "build-all": "run-p types build",
-    "test-browser": "jest",
+    "test": "jest",
     "test-headless": "HEADLESS=1 jest",
     "build": "rollup -c",
     "autobuild": "rollup -c -w",

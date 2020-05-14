@@ -171,8 +171,8 @@ export default function ChartTimelineItemsRowItem(vido: Vido, props: Props) {
       leave = false;
     }
     props = changedProps;
-    className = api.getClass(componentName, props.row.id + ':' + props.item.id);
-    labelClassName = api.getClass(componentName + '-label', props.row.id + ':' + props.item.id);
+    className = api.getClass(componentName, props.row.id + '-' + props.item.id);
+    labelClassName = api.getClass(componentName + '-label', props.row.id + '-' + props.item.id);
     actionProps.item = props.item;
     actionProps.row = props.row;
     updateItem();
