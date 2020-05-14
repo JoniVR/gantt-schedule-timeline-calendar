@@ -70,9 +70,9 @@ export default function List(vido: Vido, props = {}) {
   });
 
   onDestroy(
-    state.subscribeAll(['config.height', 'config.list.expander'], (bulk) => {
+    state.subscribeAll(['$data.height', 'config.list.expander'], (bulk) => {
       const expander = state.get('config.list.expander');
-      styleMap.style['height'] = state.get('config.height') + 'px';
+      styleMap.style['height'] = state.get('$data.height') + 'px';
       styleMap.style['--expander-padding-width'] = expander.padding + 'px';
       styleMap.style['--expander-size'] = expander.size + 'px';
       update();

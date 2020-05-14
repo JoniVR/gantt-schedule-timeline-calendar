@@ -110,8 +110,9 @@ export default function ListColumnRow(vido: Vido, props: Props) {
       return;
     }
     if (props.column === undefined || props.row === undefined) return;
-    className = api.getClass(componentName, props.row.id);
-    classNameContent = api.getClass(componentName + '-content', props.row.id);
+    const additional = `${props.row.id}-${props.column.id}`;
+    className = api.getClass(componentName, additional);
+    classNameContent = api.getClass(componentName + '-content', additional);
     classNameCurrent = api.getClass(componentName);
     const expander = state.get('config.list.expander');
     // @ts-ignore
@@ -144,7 +145,7 @@ export default function ListColumnRow(vido: Vido, props: Props) {
       }
     }
     if (props.row.classNames && props.row.classNames.length) {
-      classNameCurrent = api.getClass(componentName, props.row.id) + ' ' + props.row.classNames.join(' ');
+      classNameCurrent = api.getClass(componentName, additional) + ' ' + props.row.classNames.join(' ');
     } else {
       classNameCurrent = className;
     }

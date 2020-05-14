@@ -97,16 +97,17 @@ export default function Main(vido: Vido, props = {}) {
   function heightChange() {
     const config = state.get('config');
     const scrollBarHeight = state.get('config.scroll.horizontal.size');
-    const height = config.height - config.headerHeight - scrollBarHeight;
-    state.update('$data.innerHeight', height);
-    styleMap.style['--height'] = config.height + 'px';
+    const finalInnerHeight = config.innerHeight - scrollBarHeight;
+    state
+      .multi()
+      .update('$data.innerHeight', finalInnerHeight)
+      .update('$data.height', config.innerHeight + config.headerHeight)
+      .done();
+    styleMap.style['--height'] = finalInnerHeight + 'px';
     update();
   }
   onDestroy(
-    state.subscribeAll(
-      ['config.height', 'config.innerHeight', 'config.headerHeight', 'config.scroll.horizontal.size'],
-      heightChange
-    )
+    state.subscribeAll(['config.innerHeight', 'config.headerHeight', 'config.scroll.horizontal.size'], heightChange)
   );
 
   function resizerActiveChange(active: boolean) {

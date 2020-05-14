@@ -4999,18 +4999,18 @@
 	Vido.prototype.Slots = Slots;
 
 	/*! *****************************************************************************
-	Copyright (c) Microsoft Corporation. All rights reserved.
-	Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-	this file except in compliance with the License. You may obtain a copy of the
-	License at http://www.apache.org/licenses/LICENSE-2.0
+	Copyright (c) Microsoft Corporation.
 
-	THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-	KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-	WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-	MERCHANTABLITY OR NON-INFRINGEMENT.
+	Permission to use, copy, modify, and/or distribute this software for any
+	purpose with or without fee is hereby granted.
 
-	See the Apache Version 2.0 License for specific language governing permissions
-	and limitations under the License.
+	THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+	REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+	AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+	INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+	LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+	OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+	PERFORMANCE OF THIS SOFTWARE.
 	***************************************************************************** */
 
 	function __awaiter(thisArg, _arguments, P, generator) {
@@ -6016,12 +6016,16 @@
 	    function heightChange() {
 	        const config = state.get('config');
 	        const scrollBarHeight = state.get('config.scroll.horizontal.size');
-	        const height = config.height - config.headerHeight - scrollBarHeight;
-	        state.update('$data.innerHeight', height);
-	        styleMap.style['--height'] = config.height + 'px';
+	        const finalInnerHeight = config.innerHeight - scrollBarHeight;
+	        state
+	            .multi()
+	            .update('$data.innerHeight', finalInnerHeight)
+	            .update('$data.height', config.innerHeight + config.headerHeight)
+	            .done();
+	        styleMap.style['--height'] = finalInnerHeight + 'px';
 	        update();
 	    }
-	    onDestroy(state.subscribeAll(['config.height', 'config.innerHeight', 'config.headerHeight', 'config.scroll.horizontal.size'], heightChange));
+	    onDestroy(state.subscribeAll(['config.innerHeight', 'config.headerHeight', 'config.scroll.horizontal.size'], heightChange));
 	    function resizerActiveChange(active) {
 	        resizerActive = active;
 	        className = api.getClass(api.name);
@@ -7182,9 +7186,9 @@
 	        ['--expander-padding-width']: '',
 	        ['--expander-size']: '',
 	    });
-	    onDestroy(state.subscribeAll(['config.height', 'config.list.expander'], (bulk) => {
+	    onDestroy(state.subscribeAll(['$data.height', 'config.list.expander'], (bulk) => {
 	        const expander = state.get('config.list.expander');
-	        styleMap.style['height'] = state.get('config.height') + 'px';
+	        styleMap.style['height'] = state.get('$data.height') + 'px';
 	        styleMap.style['--expander-padding-width'] = expander.padding + 'px';
 	        styleMap.style['--expander-size'] = expander.size + 'px';
 	        update();
@@ -7603,8 +7607,9 @@
 	        }
 	        if (props.column === undefined || props.row === undefined)
 	            return;
-	        className = api.getClass(componentName, props.row.id);
-	        classNameContent = api.getClass(componentName + '-content', props.row.id);
+	        const additional = `${props.row.id}-${props.column.id}`;
+	        className = api.getClass(componentName, additional);
+	        classNameContent = api.getClass(componentName + '-content', additional);
 	        classNameCurrent = api.getClass(componentName);
 	        const expander = state.get('config.list.expander');
 	        // @ts-ignore
@@ -7635,7 +7640,7 @@
 	            }
 	        }
 	        if (props.row.classNames && props.row.classNames.length) {
-	            classNameCurrent = api.getClass(componentName, props.row.id) + ' ' + props.row.classNames.join(' ');
+	            classNameCurrent = api.getClass(componentName, additional) + ' ' + props.row.classNames.join(' ');
 	        }
 	        else {
 	            classNameCurrent = className;
@@ -8533,7 +8538,7 @@
 	    const slots = api.generateSlots(componentName, vido, props);
 	    let className;
 	    function updateClassName(time) {
-	        className = api.getClass(componentName, `${props.row.id}:${time.leftGlobalDate.format('YYYY-MM-DDTHH:mm')}`);
+	        className = api.getClass(componentName, `${props.row.id}-${time.leftGlobalDate.format('YYYY-MM-DDTHH:mm')}`);
 	        if (time.current) {
 	            className += ' current';
 	        }
@@ -9010,7 +9015,7 @@
 	    return {
 	        plugins: [],
 	        plugin: {},
-	        innerHeight: 822,
+	        innerHeight: 428,
 	        headerHeight: 72,
 	        components: {
 	            Main,

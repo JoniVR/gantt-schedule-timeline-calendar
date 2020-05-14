@@ -74,7 +74,7 @@ function defaultConfig(): Config {
   return {
     plugins: [],
     plugin: {},
-    innerHeight: 822,
+    innerHeight: 428,
     headerHeight: 72,
     components: {
       Main,
