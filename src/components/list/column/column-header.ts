@@ -45,8 +45,11 @@ export default function ListColumnHeader(vido: Vido, props: Props) {
 
   const slots = api.generateSlots(componentName, vido, props);
 
+  let className, contentClass;
   onChange((changedProps) => {
     props = changedProps;
+    className = api.getClass(componentName, props.column.id);
+    contentClass = api.getClass(componentName + '-content', props.column.id);
     for (const prop in props) {
       actionProps[prop] = props[prop];
     }
@@ -54,14 +57,6 @@ export default function ListColumnHeader(vido: Vido, props: Props) {
     ListColumnRowExpander.change(props);
     slots.change(changedProps);
   });
-
-  let className, contentClass;
-  onDestroy(
-    state.subscribe('config.classNames', () => {
-      className = api.getClass(componentName);
-      contentClass = api.getClass(componentName + '-content');
-    })
-  );
 
   const styleMap = new StyleMap({
     height: '',

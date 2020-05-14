@@ -112,13 +112,7 @@ export default function ChartTimelineItemsRow(vido: Vido, props: Props) {
   }
 
   const componentName = 'chart-timeline-items-row';
-  let className;
-  onDestroy(
-    state.subscribe('config.classNames', () => {
-      className = api.getClass(componentName);
-      update();
-    })
-  );
+  let className = api.getClass(componentName);
 
   const slots = api.generateSlots(componentName, vido, props);
 
@@ -130,6 +124,7 @@ export default function ChartTimelineItemsRow(vido: Vido, props: Props) {
       return update();
     }
     props = changedProps;
+    className = api.getClass(componentName, props.row.id);
     for (const prop in props) {
       actionProps[prop] = props[prop];
     }

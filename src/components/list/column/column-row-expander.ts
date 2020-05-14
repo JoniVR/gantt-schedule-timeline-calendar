@@ -19,7 +19,7 @@ export default function ListColumnRowExpander(vido: Vido, props: Props) {
   const componentName = 'list-column-row-expander';
   const componentActions = api.getActions(componentName);
   const actionProps = { ...props, api, state };
-  let className;
+  let className = api.getClass(componentName);
 
   let ListColumnRowExpanderToggleComponent;
   const toggleUnsub = state.subscribe(
@@ -39,18 +39,12 @@ export default function ListColumnRowExpander(vido: Vido, props: Props) {
   let wrapper;
   onDestroy(state.subscribe('config.wrappers.ListColumnRowExpander', (value) => (wrapper = value)));
 
-  onDestroy(
-    state.subscribe('config.classNames', (value) => {
-      className = api.getClass(componentName);
-      update();
-    })
-  );
-
   const slots = api.generateSlots(componentName, vido, props);
 
   if (props.row) {
     function onPropsChange(changedProps) {
       props = changedProps;
+      className = api.getId(componentName, props.row.id);
       for (const prop in props) {
         actionProps[prop] = props[prop];
       }

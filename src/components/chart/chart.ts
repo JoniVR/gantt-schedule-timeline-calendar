@@ -39,18 +39,11 @@ export default function Chart(vido: Vido, props = {}) {
   let wrapper;
   onDestroy(state.subscribe('config.wrappers.Chart', (value) => (wrapper = value)));
 
-  let className;
+  const className = api.getClass(componentName);
   const componentActions = api.getActions(componentName);
 
   let calculatedZoomMode = false;
   onDestroy(state.subscribe('config.chart.time.calculatedZoomMode', (zoomMode) => (calculatedZoomMode = zoomMode)));
-
-  onDestroy(
-    state.subscribe('config.classNames', () => {
-      className = api.getClass(componentName);
-      update();
-    })
-  );
 
   function onWheelHandler(event: WheelEvent) {
     if (event.type === 'wheel') {

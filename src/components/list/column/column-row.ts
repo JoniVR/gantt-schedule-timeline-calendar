@@ -85,13 +85,7 @@ export default function ListColumnRow(vido: Vido, props: Props) {
   );
   const ListColumnRowExpander = createComponent(ListColumnRowExpanderComponent, { row: props.row });
 
-  let className;
-  onDestroy(
-    state.subscribe('config.classNames', (value) => {
-      className = api.getClass(componentName);
-      update();
-    })
-  );
+  let className = api.getClass(componentName);
   let classNameCurrent = className;
 
   const slots = api.generateSlots(componentName, vido, props);

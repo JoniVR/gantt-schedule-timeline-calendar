@@ -37,13 +37,7 @@ export default function ChartTimelineGrid(vido: Vido, props) {
 
   const GridRowComponent = state.get('config.components.ChartTimelineGridRow');
 
-  let className;
-  onDestroy(
-    state.subscribe('config.classNames', () => {
-      className = api.getClass(componentName);
-      update();
-    })
-  );
+  const className = api.getClass(componentName);
 
   let onCellCreate;
   onDestroy(state.subscribe('config.chart.grid.cell.onCreate', (onCreate) => (onCellCreate = onCreate)));

@@ -21,13 +21,7 @@ export default function ChartCalendar(vido: Vido, props) {
   let wrapper;
   onDestroy(state.subscribe('config.wrappers.ChartCalendar', (value) => (wrapper = value)));
 
-  let className;
-  onDestroy(
-    state.subscribe('config.classNames', (value) => {
-      className = api.getClass(componentName);
-      update();
-    })
-  );
+  const className = api.getClass(componentName);
 
   let headerHeight;
   const styleMap = new StyleMap({ height: '', ['--headerHeight' as any]: '', 'margin-left': '' });

@@ -86,21 +86,13 @@ export default function Main(vido: Vido, props = {}) {
   let componentActions;
   onDestroy(state.subscribe('config.actions.main', (actions) => (componentActions = actions)));
 
-  let className;
   const styleMap = new StyleMap({});
   let rowsHeight = 0;
   let resizerActive = false;
   let lastRowsHeight = -1;
   let timeLoadedEventFired = false;
 
-  function updateClassNames() {
-    className = api.getClass(componentName);
-    if (resizerActive) {
-      className += ` ${componentName}__list-column-header-resizer--active`;
-    }
-    update();
-  }
-  onDestroy(state.subscribe('config.classNames', updateClassNames));
+  let className = api.getClass(componentName);
 
   function heightChange() {
     const config = state.get('config');

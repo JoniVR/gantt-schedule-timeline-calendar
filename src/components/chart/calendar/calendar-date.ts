@@ -46,12 +46,7 @@ export default function ChartCalendarDay(vido: Vido, props: Props) {
   let wrapper;
   onDestroy(state.subscribe('config.wrappers.ChartCalendarDate', (value) => (wrapper = value)));
 
-  let className;
-  onDestroy(
-    state.subscribe('config.classNames', () => {
-      className = api.getClass(componentName);
-    })
-  );
+  let className = api.getClass(componentName);
 
   let additionalClass = '';
   let time, htmlFormatted;

@@ -21,13 +21,8 @@ export default function ChartTimelineItems(vido: Vido, props = {}) {
   let ItemsRowComponent;
   onDestroy(state.subscribe('config.components.ChartTimelineItemsRow', (value) => (ItemsRowComponent = value)));
 
-  let className;
-  onDestroy(
-    state.subscribe('config.classNames', () => {
-      className = api.getClass(componentName);
-      update();
-    })
-  );
+  const className = api.getClass(componentName);
+
   const styleMap = new StyleMap({}, true);
   function calculateStyle() {
     const width = state.get('$data.chart.dimensions.width');

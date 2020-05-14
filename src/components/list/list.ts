@@ -47,7 +47,7 @@ export default function List(vido: Vido, props = {}) {
   }
   renderToggleIcons();
 
-  let className;
+  const className = api.getClass(componentName);
   let list, percent;
   function onListChange() {
     list = state.get('config.list');
@@ -55,13 +55,6 @@ export default function List(vido: Vido, props = {}) {
     update();
   }
   onDestroy(state.subscribe('config.list', onListChange));
-
-  onDestroy(
-    state.subscribe('config.classNames', () => {
-      className = api.getClass(componentName);
-      update();
-    })
-  );
 
   let listColumns = [];
   function onListColumnsDataChange(data) {

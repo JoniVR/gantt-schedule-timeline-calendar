@@ -75,7 +75,8 @@ declare module "api/api" {
     import { Config, DataChartTime, ScrollTypeHorizontal, Row, Item, Vido, Items, ScrollTypeVertical, Rows } from "gstc";
     import { generateSlots } from "api/slots";
     import { lithtml } from "../node_modules/@neuronet.io/vido/src/vido";
-    export function getClass(name: string): string;
+    export function getClass(name: string, appendix?: string): string;
+    export function getId(name: string, id: string): string;
     export function prepareState(userConfig: Config): {
         config: any;
     };
@@ -115,6 +116,7 @@ declare module "api/api" {
         generateSlots: typeof generateSlots;
         mergeDeep: typeof import("@neuronet.io/vido/src/helpers").mergeDeep;
         getClass: typeof getClass;
+        getId: typeof getId;
         allActions: any[];
         getActions(name: string): any;
         isItemInViewport(item: Item, leftGlobal: number, rightGlobal: number): boolean;

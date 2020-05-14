@@ -56,12 +56,7 @@ export default function ChartTimelineGridRow(vido: Vido, props: RowWithCells) {
   );
 
   const componentActions = api.getActions(componentName);
-  let className;
-  onDestroy(
-    state.subscribe('config.classNames', () => {
-      className = api.getClass(componentName);
-    })
-  );
+  let className = api.getClass(componentName);
 
   const styleMap = new StyleMap(
     {
@@ -87,6 +82,7 @@ export default function ChartTimelineGridRow(vido: Vido, props: RowWithCells) {
     }
     shouldDetach = false;
     props = changedProps;
+    className = api.getClass(componentName, props.row.id);
     reuseComponents(rowsCellsComponents, props.cells, (cell) => cell, GridCellComponent, false);
     styleMap.setStyle({});
     styleMap.style.height = props.row.$data.outerHeight + 'px';

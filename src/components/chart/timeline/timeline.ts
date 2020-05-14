@@ -55,14 +55,8 @@ export default function ChartTimeline(vido: Vido, props) {
 
   const slots = api.generateSlots(componentName, vido, props);
 
-  let className, classNameInner;
-  onDestroy(
-    state.subscribe('config.classNames', () => {
-      className = api.getClass(componentName);
-      classNameInner = api.getClass(componentName + '-inner');
-      update();
-    })
-  );
+  const className = api.getClass(componentName);
+  const classNameInner = api.getClass(componentName + '-inner');
 
   let showToggle;
   onDestroy(state.subscribe('config.list.toggle.display', (val) => (showToggle = val)));

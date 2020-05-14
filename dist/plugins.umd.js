@@ -1696,12 +1696,14 @@
    * @package   gantt-schedule-timeline-calendar
    * @license   AGPL-3.0
    */
-  const lib = 'gantt-schedule-timeline-calendar';
-  function getClass(name) {
+  const lib = 'gstc';
+  function getClass(name, appendix = '') {
       let simple = `${lib}__${name}`;
       if (name === lib) {
           simple = lib;
       }
+      if (appendix)
+          return `${simple} ${simple}--${appendix}`;
       return simple;
   }
 

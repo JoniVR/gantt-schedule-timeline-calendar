@@ -23,17 +23,14 @@ export default function ListColumnRowExpanderToggle(vido: Vido, props: Props) {
 
   const componentActions = api.getActions(componentName);
   let className, classNameChild, classNameOpen, classNameClosed;
+  className = api.getClass(componentName);
+  classNameChild = api.getClass(componentName + '-child');
+  classNameOpen = api.getClass(componentName + '-open');
+  classNameClosed = api.getClass(componentName + '-closed');
+
   let expanded = false;
   let iconChild, iconOpen, iconClosed;
-  onDestroy(
-    state.subscribe('config.classNames', (value) => {
-      className = api.getClass(componentName);
-      classNameChild = className + '-child';
-      classNameOpen = className + '-open';
-      classNameClosed = className + '-closed';
-      update();
-    })
-  );
+
   onDestroy(
     state.subscribe('$data.list.expander.icons', (icons) => {
       if (icons) {
@@ -54,6 +51,10 @@ export default function ListColumnRowExpanderToggle(vido: Vido, props: Props) {
   let expandedSub;
   function onPropsChange(changedProps) {
     props = changedProps;
+    className = api.getClass(componentName, props.row.id);
+    classNameChild = api.getClass(componentName + '-child', props.row.id);
+    classNameOpen = api.getClass(componentName + '-open', props.row.id);
+    classNameClosed = api.getClass(componentName + '-closed', props.row.id);
     for (const prop in props) {
       actionProps[prop] = props[prop];
     }

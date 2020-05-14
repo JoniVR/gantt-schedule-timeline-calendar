@@ -6001,20 +6001,12 @@ function Main(vido, props = {}) {
     onDestroy(state.subscribe('config.wrappers.Main', (value) => (wrapper = value)));
     let componentActions;
     onDestroy(state.subscribe('config.actions.main', (actions) => (componentActions = actions)));
-    let className;
     const styleMap = new StyleMap({});
     let rowsHeight = 0;
     let resizerActive = false;
     let lastRowsHeight = -1;
     let timeLoadedEventFired = false;
-    function updateClassNames() {
-        className = api.getClass(componentName);
-        if (resizerActive) {
-            className += ` ${componentName}__list-column-header-resizer--active`;
-        }
-        update();
-    }
-    onDestroy(state.subscribe('config.classNames', updateClassNames));
+    let className = api.getClass(componentName);
     function heightChange() {
         const config = state.get('config');
         const scrollBarHeight = state.get('config.scroll.horizontal.size');
@@ -7165,7 +7157,7 @@ function List(vido, props = {}) {
         state.update('$data.list.toggle.icons', toggleIconsSrc);
     }
     renderToggleIcons();
-    let className;
+    const className = api.getClass(componentName);
     let list, percent;
     function onListChange() {
         list = state.get('config.list');
@@ -7173,10 +7165,6 @@ function List(vido, props = {}) {
         update();
     }
     onDestroy(state.subscribe('config.list', onListChange));
-    onDestroy(state.subscribe('config.classNames', () => {
-        className = api.getClass(componentName);
-        update();
-    }));
     let listColumns = [];
     function onListColumnsDataChange(data) {
         reuseComponents(listColumns, Object.values(data), (column) => ({ column }), ListColumnComponent);
@@ -7308,6 +7296,9 @@ function ListColumn(vido, props) {
     const slots = api.generateSlots(componentName, vido, props);
     onChange((changedProps) => {
         props = changedProps;
+        className = api.getClass(componentName, props.column.id);
+        classNameOffset = api.getClass(rowsOffsetName, props.column.id);
+        classNameContainer = api.getClass(rowsComponentName, props.column.id);
         for (const prop in props) {
             actionProps[prop] = props[prop];
         }
@@ -7316,12 +7307,6 @@ function ListColumn(vido, props) {
         visibleRowsChange();
         slots.change(changedProps);
     });
-    onDestroy(state.subscribe('config.classNames', (value) => {
-        className = api.getClass(componentName);
-        classNameOffset = api.getClass(rowsOffsetName);
-        classNameContainer = api.getClass(rowsComponentName);
-        update();
-    }));
     const visibleRows = [];
     function visibleRowsChange() {
         const val = state.get('$data.list.visibleRows') || [];
@@ -7386,8 +7371,11 @@ function ListColumnHeader(vido, props) {
         componentsSubs.forEach((unsub) => unsub());
     });
     const slots = api.generateSlots(componentName, vido, props);
+    let className, contentClass;
     onChange((changedProps) => {
         props = changedProps;
+        className = api.getClass(componentName, props.column.id);
+        contentClass = api.getClass(componentName + '-content', props.column.id);
         for (const prop in props) {
             actionProps[prop] = props[prop];
         }
@@ -7395,11 +7383,6 @@ function ListColumnHeader(vido, props) {
         ListColumnRowExpander.change(props);
         slots.change(changedProps);
     });
-    let className, contentClass;
-    onDestroy(state.subscribe('config.classNames', () => {
-        className = api.getClass(componentName);
-        contentClass = api.getClass(componentName + '-content');
-    }));
     const styleMap = new StyleMap({
         height: '',
         ['--height']: '',
@@ -7450,20 +7433,22 @@ function ListColumnHeaderResizer(vido, props) {
     const componentDotsActions = api.getActions(componentName + '-dots');
     let wrapper;
     onDestroy(state.subscribe('config.wrappers.ListColumnHeaderResizer', (value) => (wrapper = value)));
-    let className, containerClass, dotsClass, dotClass, calculatedWidth;
+    let className, containerClass, dotsClass, dotClass;
+    className = api.getClass(componentName);
+    containerClass = api.getClass(componentName + '-container');
+    dotsClass = api.getClass(componentName + '-dots');
+    dotClass = api.getClass(componentName + '-dots-dot');
+    let calculatedWidth;
     const dotsStyleMap = new StyleMap({ width: '' });
     let inRealTime = false;
-    onDestroy(state.subscribe('config.classNames', (value) => {
-        className = api.getClass(componentName);
-        containerClass = api.getClass(componentName + '-container');
-        dotsClass = api.getClass(componentName + '-dots');
-        dotClass = api.getClass(componentName + '-dots-dot');
-        update();
-    }));
     const slots = api.generateSlots(componentName, vido, props);
     function updateData() {
         if (!props.column)
             return;
+        className = api.getClass(componentName, props.column.id);
+        containerClass = api.getClass(componentName + '-container', props.column.id);
+        dotsClass = api.getClass(componentName + '-dots', props.column.id);
+        dotClass = api.getClass(componentName + '-dots-dot', props.column.id);
         const list = state.get('config.list');
         calculatedWidth = props.column.width * list.columns.percent * 0.01;
         dotsStyleMap.style['--width'] = list.columns.resizer.width + 'px';
@@ -7588,11 +7573,7 @@ function ListColumnRow(vido, props) {
             ['--height']: '',
         }, true);
     const ListColumnRowExpander = createComponent(ListColumnRowExpanderComponent, { row: props.row });
-    let className;
-    onDestroy(state.subscribe('config.classNames', (value) => {
-        className = api.getClass(componentName);
-        update();
-    }));
+    let className = api.getClass(componentName);
     let classNameCurrent = className;
     const slots = api.generateSlots(componentName, vido, props);
     function onPropsChange(changedProps, options) {
@@ -7706,7 +7687,7 @@ function ListColumnRowExpander(vido, props) {
     const componentName = 'list-column-row-expander';
     const componentActions = api.getActions(componentName);
     const actionProps = Object.assign(Object.assign({}, props), { api, state });
-    let className;
+    let className = api.getClass(componentName);
     let ListColumnRowExpanderToggleComponent;
     const toggleUnsub = state.subscribe('config.components.ListColumnRowExpanderToggle', (value) => (ListColumnRowExpanderToggleComponent = value));
     const ListColumnRowExpanderToggle = createComponent(ListColumnRowExpanderToggleComponent, props.row ? { row: props.row } : {});
@@ -7716,14 +7697,11 @@ function ListColumnRowExpander(vido, props) {
     });
     let wrapper;
     onDestroy(state.subscribe('config.wrappers.ListColumnRowExpander', (value) => (wrapper = value)));
-    onDestroy(state.subscribe('config.classNames', (value) => {
-        className = api.getClass(componentName);
-        update();
-    }));
     const slots = api.generateSlots(componentName, vido, props);
     if (props.row) {
         function onPropsChange(changedProps) {
             props = changedProps;
+            className = api.getId(componentName, props.row.id);
             for (const prop in props) {
                 actionProps[prop] = props[prop];
             }
@@ -7757,15 +7735,12 @@ function ListColumnRowExpanderToggle(vido, props) {
     onDestroy(state.subscribe('config.wrappers.ListColumnRowExpanderToggle', (value) => (wrapper = value)));
     const componentActions = api.getActions(componentName);
     let className, classNameChild, classNameOpen, classNameClosed;
+    className = api.getClass(componentName);
+    classNameChild = api.getClass(componentName + '-child');
+    classNameOpen = api.getClass(componentName + '-open');
+    classNameClosed = api.getClass(componentName + '-closed');
     let expanded = false;
     let iconChild, iconOpen, iconClosed;
-    onDestroy(state.subscribe('config.classNames', (value) => {
-        className = api.getClass(componentName);
-        classNameChild = className + '-child';
-        classNameOpen = className + '-open';
-        classNameClosed = className + '-closed';
-        update();
-    }));
     onDestroy(state.subscribe('$data.list.expander.icons', (icons) => {
         if (icons) {
             iconChild = icons.child;
@@ -7783,6 +7758,10 @@ function ListColumnRowExpanderToggle(vido, props) {
     function onPropsChange(changedProps) {
         var _a;
         props = changedProps;
+        className = api.getClass(componentName, props.row.id);
+        classNameChild = api.getClass(componentName + '-child', props.row.id);
+        classNameOpen = api.getClass(componentName + '-open', props.row.id);
+        classNameClosed = api.getClass(componentName + '-closed', props.row.id);
         for (const prop in props) {
             actionProps[prop] = props[prop];
         }
@@ -7857,10 +7836,7 @@ function ListColumnRowExpanderToggle(vido, props) {
 function ListToggle(vido, props = {}) {
     const { html, onDestroy, api, state, update, StyleMap } = vido;
     const componentName = 'list-toggle';
-    let className;
-    onDestroy(state.subscribe('config.classNames', (classNames) => {
-        className = api.getClass(componentName);
-    }));
+    let className = api.getClass(componentName);
     let wrapper;
     onDestroy(state.subscribe('config.wrappers.ListToggle', (ListToggleWrapper) => (wrapper = ListToggleWrapper)));
     let toggleIconsSrc = {
@@ -7936,14 +7912,10 @@ function Chart(vido, props = {}) {
     });
     let wrapper;
     onDestroy(state.subscribe('config.wrappers.Chart', (value) => (wrapper = value)));
-    let className;
+    const className = api.getClass(componentName);
     const componentActions = api.getActions(componentName);
     let calculatedZoomMode = false;
     onDestroy(state.subscribe('config.chart.time.calculatedZoomMode', (zoomMode) => (calculatedZoomMode = zoomMode)));
-    onDestroy(state.subscribe('config.classNames', () => {
-        className = api.getClass(componentName);
-        update();
-    }));
     function onWheelHandler(event) {
         if (event.type === 'wheel') ;
     }
@@ -8000,11 +7972,7 @@ function ChartCalendar(vido, props) {
     const ChartCalendarDateComponent = state.get('config.components.ChartCalendarDate');
     let wrapper;
     onDestroy(state.subscribe('config.wrappers.ChartCalendar', (value) => (wrapper = value)));
-    let className;
-    onDestroy(state.subscribe('config.classNames', (value) => {
-        className = api.getClass(componentName);
-        update();
-    }));
+    const className = api.getClass(componentName);
     let headerHeight;
     const styleMap = new StyleMap({ height: '', ['--headerHeight']: '', 'margin-left': '' });
     onDestroy(state.subscribe('config.headerHeight', (value) => {
@@ -8095,10 +8063,7 @@ function ChartCalendarDay(vido, props) {
     const componentActions = api.getActions(componentName);
     let wrapper;
     onDestroy(state.subscribe('config.wrappers.ChartCalendarDate', (value) => (wrapper = value)));
-    let className;
-    onDestroy(state.subscribe('config.classNames', () => {
-        className = api.getClass(componentName);
-    }));
+    let className = api.getClass(componentName);
     let additionalClass = '';
     let time, htmlFormatted;
     const styleMap = new StyleMap({ width: '0px' });
@@ -8232,12 +8197,8 @@ function ChartTimeline(vido, props) {
             ListToggle.destroy();
     });
     const slots = api.generateSlots(componentName, vido, props);
-    let className, classNameInner;
-    onDestroy(state.subscribe('config.classNames', () => {
-        className = api.getClass(componentName);
-        classNameInner = api.getClass(componentName + '-inner');
-        update();
-    }));
+    const className = api.getClass(componentName);
+    const classNameInner = api.getClass(componentName + '-inner');
     let showToggle;
     onDestroy(state.subscribe('config.list.toggle.display', (val) => (showToggle = val)));
     const styleMap = new StyleMap({}), innerStyleMap = new StyleMap({});
@@ -8327,11 +8288,7 @@ function ChartTimelineGrid(vido, props) {
     let wrapper;
     onDestroy(state.subscribe('config.wrappers.ChartTimelineGrid', (value) => (wrapper = value)));
     const GridRowComponent = state.get('config.components.ChartTimelineGridRow');
-    let className;
-    onDestroy(state.subscribe('config.classNames', () => {
-        className = api.getClass(componentName);
-        update();
-    }));
+    const className = api.getClass(componentName);
     let onCellCreate;
     onDestroy(state.subscribe('config.chart.grid.cell.onCreate', (onCreate) => (onCellCreate = onCreate)));
     const rowsComponents = [];
@@ -8452,10 +8409,7 @@ function ChartTimelineGridRow(vido, props) {
     let GridCellComponent;
     onDestroy(state.subscribe('config.components.ChartTimelineGridRowCell', (component) => (GridCellComponent = component)));
     const componentActions = api.getActions(componentName);
-    let className;
-    onDestroy(state.subscribe('config.classNames', () => {
-        className = api.getClass(componentName);
-    }));
+    let className = api.getClass(componentName);
     const styleMap = new StyleMap({
         width: props.width + 'px',
         height: props.row.height + 'px',
@@ -8475,6 +8429,7 @@ function ChartTimelineGridRow(vido, props) {
         }
         shouldDetach = false;
         props = changedProps;
+        className = api.getClass(componentName, props.row.id);
         reuseComponents(rowsCellsComponents, props.cells, (cell) => cell, GridCellComponent, false);
         styleMap.setStyle({});
         styleMap.style.height = props.row.$data.outerHeight + 'px';
@@ -8568,7 +8523,7 @@ function ChartTimelineGridRowCell(vido, props) {
     const slots = api.generateSlots(componentName, vido, props);
     let className;
     function updateClassName(time) {
-        className = api.getClass(componentName);
+        className = api.getClass(componentName, `${props.row.id}:${time.leftGlobalDate.format('YYYY-MM-DDTHH:mm')}`);
         if (time.current) {
             className += ' current';
         }
@@ -8638,11 +8593,7 @@ function ChartTimelineItems(vido, props = {}) {
     onDestroy(state.subscribe(`config.actions.${componentName}`, (actions) => (componentActions = actions)));
     let ItemsRowComponent;
     onDestroy(state.subscribe('config.components.ChartTimelineItemsRow', (value) => (ItemsRowComponent = value)));
-    let className;
-    onDestroy(state.subscribe('config.classNames', () => {
-        className = api.getClass(componentName);
-        update();
-    }));
+    const className = api.getClass(componentName);
     const styleMap = new StyleMap({}, true);
     function calculateStyle() {
         const width = state.get('$data.chart.dimensions.width');
@@ -8763,11 +8714,7 @@ function ChartTimelineItemsRow(vido, props) {
         );
     }
     const componentName = 'chart-timeline-items-row';
-    let className;
-    onDestroy(state.subscribe('config.classNames', () => {
-        className = api.getClass(componentName);
-        update();
-    }));
+    let className = api.getClass(componentName);
     const slots = api.generateSlots(componentName, vido, props);
     onChange(function onPropsChange(changedProps, options) {
         if (options.leave || changedProps.row === undefined) {
@@ -8777,6 +8724,7 @@ function ChartTimelineItemsRow(vido, props) {
             return update();
         }
         props = changedProps;
+        className = api.getClass(componentName, props.row.id);
         for (const prop in props) {
             actionProps[prop] = props[prop];
         }
@@ -8928,22 +8876,25 @@ function ChartTimelineItemsRowItem(vido, props) {
         update();
     }
     const componentName = 'chart-timeline-items-row-item';
-    const cutterName = api.getClass(componentName) + '-cut';
+    const cutterClassName = api.getClass(componentName + '-cut');
     const cutterLeft = () => html `
-    <div class=${cutterName} style=${leftCutStyleMap}>
+    <div class=${cutterClassName} style=${leftCutStyleMap}>
       ${svg `<svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 18 16" width="16">
         <path fill-opacity="0.5" fill="#ffffff" d="m5,3l-5,5l5,5l0,-10z" />
       </svg>`}
     </div>
   `;
     const cutterRight = () => html `
-    <div class=${cutterName} style=${rightCutStyleMap}>
+    <div class=${cutterClassName} style=${rightCutStyleMap}>
       ${svg `<svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 4 16" width="16">
         <path transform="rotate(-180 2.5,8) " fill-opacity="0.5" fill="#ffffff" d="m5,3l-5,5l5,5l0,-10z" />
       </svg>`}
     </div>
   `;
     const slots = api.generateSlots(componentName, vido, props);
+    let className, labelClassName;
+    className = api.getClass(componentName);
+    labelClassName = api.getClass(componentName + '-label');
     onChange(function onPropsChange(changedProps, options) {
         if (options.leave || changedProps.row === undefined || changedProps.item === undefined) {
             leave = true;
@@ -8961,18 +8912,14 @@ function ChartTimelineItemsRowItem(vido, props) {
             leave = false;
         }
         props = changedProps;
+        className = api.getClass(componentName, props.row.id + ':' + props.item.id);
+        labelClassName = api.getClass(componentName + '-label', props.row.id + ':' + props.item.id);
         actionProps.item = props.item;
         actionProps.row = props.row;
         updateItem();
         slots.change(changedProps, options);
     });
     const componentActions = api.getActions(componentName);
-    let className, labelClassName;
-    onDestroy(state.subscribe('config.classNames', () => {
-        className = api.getClass(componentName);
-        labelClassName = api.getClass(componentName + '-label');
-        update();
-    }));
     onDestroy(state.subscribe('$data.chart.time', updateItem));
     componentActions.push(BindElementAction$7);
     const actions = Actions.create(componentActions, actionProps);
@@ -11048,13 +10995,22 @@ function generateSlots(name, vido, props) {
  * @license   AGPL-3.0
  */
 const mergeDeep$1 = helpers.mergeDeep;
-const lib = 'gantt-schedule-timeline-calendar';
-function getClass(name) {
+const lib = 'gstc';
+function getClass(name, appendix = '') {
     let simple = `${lib}__${name}`;
     if (name === lib) {
         simple = lib;
     }
+    if (appendix)
+        return `${simple} ${simple}--${appendix}`;
     return simple;
+}
+function getId(name, id) {
+    let simple = `${lib}__${name}`;
+    if (name === lib) {
+        simple = lib;
+    }
+    return `${simple}--${id}`;
 }
 function mergeActions(userConfig, defaultConfig, merge) {
     const defaultConfigActions = merge({}, defaultConfig.actions);
@@ -11123,6 +11079,7 @@ class Api {
         this.generateSlots = generateSlots;
         this.mergeDeep = mergeDeep$1;
         this.getClass = getClass;
+        this.getId = getId;
         this.allActions = [];
         this.state = state;
         this.time = new Time(this.state, this);

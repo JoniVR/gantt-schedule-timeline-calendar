@@ -33,14 +33,23 @@ import { lithtml } from '@neuronet.io/vido/src/vido';
 import helpers from '@neuronet.io/vido/src/helpers';
 const mergeDeep = helpers.mergeDeep;
 
-const lib = 'gantt-schedule-timeline-calendar';
+const lib = 'gstc';
 
-export function getClass(name: string) {
+export function getClass(name: string, appendix: string = '') {
   let simple = `${lib}__${name}`;
   if (name === lib) {
     simple = lib;
   }
+  if (appendix) return `${simple} ${simple}--${appendix}`;
   return simple;
+}
+
+export function getId(name: string, id: string) {
+  let simple = `${lib}__${name}`;
+  if (name === lib) {
+    simple = lib;
+  }
+  return `${simple}--${id}`;
 }
 
 function mergeActions(userConfig: Config, defaultConfig: Config, merge) {
@@ -149,6 +158,7 @@ export class Api {
   generateSlots = generateSlots;
   mergeDeep = mergeDeep;
   getClass = getClass;
+  getId = getId;
   allActions = [];
 
   getActions(name: string) {

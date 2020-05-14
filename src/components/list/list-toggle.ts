@@ -13,12 +13,7 @@ import { Vido } from '../../gstc';
 export default function ListToggle(vido: Vido, props = {}) {
   const { html, onDestroy, api, state, update, StyleMap } = vido;
   const componentName = 'list-toggle';
-  let className;
-  onDestroy(
-    state.subscribe('config.classNames', (classNames) => {
-      className = api.getClass(componentName);
-    })
-  );
+  let className = api.getClass(componentName);
   let wrapper;
   onDestroy(state.subscribe('config.wrappers.ListToggle', (ListToggleWrapper) => (wrapper = ListToggleWrapper)));
 

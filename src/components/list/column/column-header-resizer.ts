@@ -24,23 +24,25 @@ export default function ListColumnHeaderResizer(vido: Vido, props: Props) {
   let wrapper;
   onDestroy(state.subscribe('config.wrappers.ListColumnHeaderResizer', (value) => (wrapper = value)));
 
-  let className, containerClass, dotsClass, dotClass, calculatedWidth;
+  let className, containerClass, dotsClass, dotClass;
+  className = api.getClass(componentName);
+  containerClass = api.getClass(componentName + '-container');
+  dotsClass = api.getClass(componentName + '-dots');
+  dotClass = api.getClass(componentName + '-dots-dot');
+
+  let calculatedWidth;
   const dotsStyleMap = new StyleMap({ width: '' });
   let inRealTime = false;
-  onDestroy(
-    state.subscribe('config.classNames', (value) => {
-      className = api.getClass(componentName);
-      containerClass = api.getClass(componentName + '-container');
-      dotsClass = api.getClass(componentName + '-dots');
-      dotClass = api.getClass(componentName + '-dots-dot');
-      update();
-    })
-  );
 
   const slots = api.generateSlots(componentName, vido, props);
 
   function updateData() {
     if (!props.column) return;
+    className = api.getClass(componentName, props.column.id);
+    containerClass = api.getClass(componentName + '-container', props.column.id);
+    dotsClass = api.getClass(componentName + '-dots', props.column.id);
+    dotClass = api.getClass(componentName + '-dots-dot', props.column.id);
+
     const list = state.get('config.list');
     calculatedWidth = props.column.width * list.columns.percent * 0.01;
     dotsStyleMap.style['--width'] = list.columns.resizer.width + 'px';

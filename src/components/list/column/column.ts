@@ -97,6 +97,9 @@ export default function ListColumn(vido: Vido, props: Props) {
 
   onChange((changedProps) => {
     props = changedProps;
+    className = api.getClass(componentName, props.column.id);
+    classNameOffset = api.getClass(rowsOffsetName, props.column.id);
+    classNameContainer = api.getClass(rowsComponentName, props.column.id);
     for (const prop in props) {
       actionProps[prop] = props[prop];
     }
@@ -105,15 +108,6 @@ export default function ListColumn(vido: Vido, props: Props) {
     visibleRowsChange();
     slots.change(changedProps);
   });
-
-  onDestroy(
-    state.subscribe('config.classNames', (value) => {
-      className = api.getClass(componentName);
-      classNameOffset = api.getClass(rowsOffsetName);
-      classNameContainer = api.getClass(rowsComponentName);
-      update();
-    })
-  );
 
   const visibleRows = [];
   function visibleRowsChange() {

@@ -133,16 +133,16 @@ export default function ChartTimelineItemsRowItem(vido: Vido, props: Props) {
   }
 
   const componentName = 'chart-timeline-items-row-item';
-  const cutterName = api.getClass(componentName) + '-cut';
+  const cutterClassName = api.getClass(componentName + '-cut');
   const cutterLeft = () => html`
-    <div class=${cutterName} style=${leftCutStyleMap}>
+    <div class=${cutterClassName} style=${leftCutStyleMap}>
       ${svg`<svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 18 16" width="16">
         <path fill-opacity="0.5" fill="#ffffff" d="m5,3l-5,5l5,5l0,-10z" />
       </svg>`}
     </div>
   `;
   const cutterRight = () => html`
-    <div class=${cutterName} style=${rightCutStyleMap}>
+    <div class=${cutterClassName} style=${rightCutStyleMap}>
       ${svg`<svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 4 16" width="16">
         <path transform="rotate(-180 2.5,8) " fill-opacity="0.5" fill="#ffffff" d="m5,3l-5,5l5,5l0,-10z" />
       </svg>`}
@@ -150,6 +150,10 @@ export default function ChartTimelineItemsRowItem(vido: Vido, props: Props) {
   `;
 
   const slots = api.generateSlots(componentName, vido, props);
+
+  let className, labelClassName;
+  className = api.getClass(componentName);
+  labelClassName = api.getClass(componentName + '-label');
 
   onChange(function onPropsChange(changedProps, options) {
     if (options.leave || changedProps.row === undefined || changedProps.item === undefined) {
@@ -167,6 +171,8 @@ export default function ChartTimelineItemsRowItem(vido: Vido, props: Props) {
       leave = false;
     }
     props = changedProps;
+    className = api.getClass(componentName, props.row.id + ':' + props.item.id);
+    labelClassName = api.getClass(componentName + '-label', props.row.id + ':' + props.item.id);
     actionProps.item = props.item;
     actionProps.row = props.row;
     updateItem();
@@ -174,14 +180,6 @@ export default function ChartTimelineItemsRowItem(vido: Vido, props: Props) {
   });
 
   const componentActions = api.getActions(componentName);
-  let className, labelClassName;
-  onDestroy(
-    state.subscribe('config.classNames', () => {
-      className = api.getClass(componentName);
-      labelClassName = api.getClass(componentName + '-label');
-      update();
-    })
-  );
 
   onDestroy(state.subscribe('$data.chart.time', updateItem));
 

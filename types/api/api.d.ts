@@ -4,7 +4,8 @@ import dayjs from 'dayjs';
 import { Config, DataChartTime, ScrollTypeHorizontal, Row, Item, Vido, Items, ScrollTypeVertical, Rows } from '../gstc';
 import { generateSlots } from './slots';
 import { lithtml } from '@neuronet.io/vido/src/vido';
-export declare function getClass(name: string): string;
+export declare function getClass(name: string, appendix?: string): string;
+export declare function getId(name: string, id: string): string;
 export declare function prepareState(userConfig: Config): {
     config: any;
 };
@@ -44,6 +45,7 @@ export declare class Api {
     generateSlots: typeof generateSlots;
     mergeDeep: typeof import("@neuronet.io/vido/src/helpers").mergeDeep;
     getClass: typeof getClass;
+    getId: typeof getId;
     allActions: any[];
     getActions(name: string): any;
     isItemInViewport(item: Item, leftGlobal: number, rightGlobal: number): boolean;
