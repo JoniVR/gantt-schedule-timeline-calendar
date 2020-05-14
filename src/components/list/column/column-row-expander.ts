@@ -44,7 +44,7 @@ export default function ListColumnRowExpander(vido: Vido, props: Props) {
   if (props.row) {
     function onPropsChange(changedProps) {
       props = changedProps;
-      className = api.getId(componentName, props.row.id);
+      className = api.getClass(componentName, props.row.id);
       for (const prop in props) {
         actionProps[prop] = props[prop];
       }

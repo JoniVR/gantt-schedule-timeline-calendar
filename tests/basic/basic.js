@@ -1,3 +1,5 @@
+import GSTC from '../../dist/gstc.esm.js';
+
 const iterations = 100;
 
 const pallete = [
@@ -28,14 +30,12 @@ for (let i = 0; i < iterations; i++) {
   };
 }
 
-// @ts-ignore
 const startDate = GSTC.api.date().subtract(5, 'month').valueOf();
 
 const items = {};
 for (let i = 0; i < iterations; i++) {
   let rowId;
   let id = (rowId = i.toString());
-  // @ts-ignore
   let startDayjs = GSTC.api
     .date(startDate)
     .startOf('day')
@@ -51,19 +51,9 @@ for (let i = 0; i < iterations; i++) {
         .endOf('day')
         .valueOf(),
     },
-    progress: 50,
     rowId,
-    lines: i > 0 && i % 2 === 0 ? [(i + 1).toString()] : [],
     style: { background: pallete[Math.floor(Math.random() * pallete.length)] },
   };
-  if (Math.round(Math.random()))
-    // @ts-ignore
-    items[id].time.start = GSTC.api
-      .date(items[id].time.start)
-      .add(Math.round(Math.random() * 23), 'hour')
-      .valueOf();
-  // @ts-ignore
-  items[id].label = GSTC.api.date(items[id].time.start).format('YYYY-MM-DD HH:mm');
 }
 
 const columns = {
@@ -90,51 +80,14 @@ const columns = {
         content: 'Label',
       },
     },
-    progress: {
-      id: 'progress',
-      data: 'progress',
-      width: 30,
-      header: {
-        content: '%',
-      },
-    },
   },
 };
 
-class ResizingItemClass {
-  update(element, data) {
-    const hasClass = element.classList.contains('resizing');
-    if (data.item.isResizing && !hasClass) {
-      element.classList.add('resizing');
-    } else if (!data.item.isResizing && hasClass) {
-      element.classList.remove('resizing');
-    }
-  }
-}
-
-let selectionApi;
 const config = {
-  plugins: [
-    // @ts-ignore
-    TimelinePointer.Plugin(),
-    // @ts-ignore
-    Selection.Plugin(),
-    // @ts-ignore
-    ItemMovement.Plugin(),
-    // @ts-ignore
-    CalendarScroll.Plugin(),
-    // @ts-ignore
-    HighlightWeekends.Plugin(),
-  ],
   height: 423,
   list: {
     rows,
     columns,
-  },
-  scroll: {
-    vertical: {
-      smooth: true,
-    },
   },
   chart: {
     items,
@@ -149,17 +102,10 @@ const config = {
       },
     },
   },
-  /*actions: {
-          'chart-timeline-items-row-item': [ResizingItemClass]
-        }*/
 };
 
 // @ts-ignore
 let GSTCState = (window.state = GSTC.api.stateFromConfig(config));
-/*GSTCState.subscribe('config.plugin.ItemMovement', itemMovement => {
-        if (!itemMovement || !itemMovement.item) return;
-        state.update(`config.chart.items.${itemMovement.item.id}.isResizing`, itemMovement.item.resizing);
-      });*/
 
 const element = document.getElementById('app');
 
@@ -167,23 +113,21 @@ function recenter() {
   gstc.api.scrollToTime(gstc.api.time.date().valueOf());
 }
 
-// @ts-ignore
 element.addEventListener('gstc-loaded', (event) => {
   recenter();
 });
 
-// @ts-ignore
 const gstc = GSTC({
   element,
   state: GSTCState,
 });
+
 // @ts-ignore
 window.gstc = gstc; // debug
 
 function changePeriod() {
   // @ts-ignore
   const period = document.getElementById('setperiod').value;
-  // @ts-ignore
   const zoom = GSTC.api.setPeriod(period);
 }
 
@@ -206,6 +150,4 @@ document.getElementById('percent').addEventListener('input', (ev) => {
 document.getElementById('zoom').addEventListener('input', (ev) => {
   // @ts-ignore
   gstc.state.update('config.chart.time.zoom', +ev.target.value);
-  // @ts-ignore
-  const period = gstc.state.get('config.chart.time');
 });

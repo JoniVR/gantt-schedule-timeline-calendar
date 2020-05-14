@@ -7580,7 +7580,8 @@
 	        }, true);
 	    const ListColumnRowExpander = createComponent(ListColumnRowExpanderComponent, { row: props.row });
 	    let className = api.getClass(componentName);
-	    let classNameCurrent = className;
+	    let classNameContent = api.getClass(componentName + '-content');
+	    let classNameCurrent = api.getClass(componentName);
 	    const slots = api.generateSlots(componentName, vido, props);
 	    function onPropsChange(changedProps, options) {
 	        if (options.leave || changedProps.row === undefined || changedProps.column === undefined) {
@@ -7602,6 +7603,9 @@
 	        }
 	        if (props.column === undefined || props.row === undefined)
 	            return;
+	        className = api.getClass(componentName, props.row.id);
+	        classNameContent = api.getClass(componentName + '-content', props.row.id);
+	        classNameCurrent = api.getClass(componentName);
 	        const expander = state.get('config.list.expander');
 	        // @ts-ignore
 	        styleMap.setStyle({}); // we must reset style because of user specified styling
@@ -7631,7 +7635,7 @@
 	            }
 	        }
 	        if (props.row.classNames && props.row.classNames.length) {
-	            classNameCurrent = className + ' ' + props.row.classNames.join(' ');
+	            classNameCurrent = api.getClass(componentName, props.row.id) + ' ' + props.row.classNames.join(' ');
 	        }
 	        else {
 	            classNameCurrent = className;
@@ -7672,7 +7676,7 @@
 	    return (templateProps) => wrapper(html `
         <div detach=${detach} class=${classNameCurrent} style=${styleMap} data-actions=${actions}>
           ${props.column.expander ? ListColumnRowExpander.html() : null}
-          <div class=${className + '-content'}>
+          <div class=${classNameContent}>
             ${slots.html('before', templateProps)}${props.column.isHTML ? getHtml() : getText()}${slots.html('after', templateProps)}
           </div>
         </div>
@@ -7707,7 +7711,7 @@
 	    if (props.row) {
 	        function onPropsChange(changedProps) {
 	            props = changedProps;
-	            className = api.getId(componentName, props.row.id);
+	            className = api.getClass(componentName, props.row.id);
 	            for (const prop in props) {
 	                actionProps[prop] = props[prop];
 	            }

@@ -86,7 +86,8 @@ export default function ListColumnRow(vido: Vido, props: Props) {
   const ListColumnRowExpander = createComponent(ListColumnRowExpanderComponent, { row: props.row });
 
   let className = api.getClass(componentName);
-  let classNameCurrent = className;
+  let classNameContent = api.getClass(componentName + '-content');
+  let classNameCurrent = api.getClass(componentName);
 
   const slots = api.generateSlots(componentName, vido, props);
 
@@ -109,6 +110,9 @@ export default function ListColumnRow(vido: Vido, props: Props) {
       return;
     }
     if (props.column === undefined || props.row === undefined) return;
+    className = api.getClass(componentName, props.row.id);
+    classNameContent = api.getClass(componentName + '-content', props.row.id);
+    classNameCurrent = api.getClass(componentName);
     const expander = state.get('config.list.expander');
     // @ts-ignore
     styleMap.setStyle({}); // we must reset style because of user specified styling
@@ -140,7 +144,7 @@ export default function ListColumnRow(vido: Vido, props: Props) {
       }
     }
     if (props.row.classNames && props.row.classNames.length) {
-      classNameCurrent = className + ' ' + props.row.classNames.join(' ');
+      classNameCurrent = api.getClass(componentName, props.row.id) + ' ' + props.row.classNames.join(' ');
     } else {
       classNameCurrent = className;
     }
@@ -181,7 +185,7 @@ export default function ListColumnRow(vido: Vido, props: Props) {
       html`
         <div detach=${detach} class=${classNameCurrent} style=${styleMap} data-actions=${actions}>
           ${props.column.expander ? ListColumnRowExpander.html() : null}
-          <div class=${className + '-content'}>
+          <div class=${classNameContent}>
             ${slots.html('before', templateProps)}${props.column.isHTML ? getHtml() : getText()}${slots.html(
               'after',
               templateProps

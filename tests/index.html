@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf8" />
+    <base href="./" />
+    <title>Tests / Examples</title>
+    <meta name="viewport" content="width=device-width" />
+    <style>
+      body {
+        font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="app"></div>
+    <script src="../node_modules/@neuronet.io/vido/dist/vido.umd.js"></script>
+    <script>
+      function Link(vido, props) {
+        const { html } = vido;
+        return () => html`<a href=${props.url}>${props.text}</div>`;
+      }
+
+      function Main(vido) {
+        const { html, reuseComponents } = vido;
+        const data = [{ url: 'basic/index.html', text: 'basic' }];
+        const links = [];
+        reuseComponents(links, data, (link) => link, Link);
+        return () => html`<div class="tests-and-examples">${links.map((link) => link.html())}</div>`;
+      }
+
+      const vido = Vido({}, {});
+      const app = vido.createApp({
+        component: Main,
+        element: document.querySelector('#app'),
+      });
+    </script>
+  </body>
+</html>

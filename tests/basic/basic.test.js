@@ -1,10 +1,8 @@
-// @ts-nocheck
-const path = require('path');
-const url = 'file:///' + path.resolve('./tests/basic');
+//@ts-nocheck
 
 describe('Basic', () => {
   beforeAll(async () => {
-    await page.goto(`${url}/index.html`);
+    await page.goto('http://localhost:4444/tests/basic/index.html');
   });
 
   it('should display things', async () => {
