@@ -5978,7 +5978,7 @@
 	                if (typeof destroyPlugin === 'function') {
 	                    pluginsDestroy.push(destroyPlugin);
 	                }
-	                else if (destroyPlugin && destroyPlugin.hasOwnProperty('destroy')) {
+	                else if (destroyPlugin && Object.prototype.hasOwnProperty.call(destroyPlugin, 'destroy')) {
 	                    pluginsDestroy.push(destroyPlugin.destroy);
 	                }
 	            }
@@ -6051,35 +6051,6 @@
 	        state.update('$data.treeMap', api.makeTreeMap(rows, items));
 	        update();
 	    }
-	    let rowsAndItems = 0;
-	    onDestroy(state.subscribeAll(['config.chart.items;', 'config.list.rows;'], (bulk, eventInfo) => {
-	        ++rowsAndItems;
-	        generateTree('reload');
-	        prepareExpandedCalculateRowHeightsAndFixOverlapped();
-	        calculateHeightRelatedThings();
-	        calculateVisibleRowsHeights();
-	        state.update('config.scroll', (scroll) => {
-	            scroll.horizontal.dataIndex = 0;
-	            scroll.horizontal.data = null;
-	            scroll.horizontal.posPx = 0;
-	            scroll.vertical.dataIndex = 0;
-	            scroll.vertical.data = null;
-	            scroll.vertical.posPx = 0;
-	            return scroll;
-	        });
-	        if (rowsAndItems === 2 && eventInfo.type !== 'subscribe') {
-	            timeLoadedEventFired = false;
-	        }
-	        recalculateTimes({ name: 'reload' });
-	        if (rowsAndItems === 2) {
-	            rowsAndItems = 0;
-	        }
-	    }));
-	    onDestroy(state.subscribeAll(['config.list.rows.*.parentId', 'config.chart.items.*.rowId'], () => {
-	        generateTree();
-	        calculateHeightRelatedThings();
-	        calculateVisibleRowsHeights();
-	    }, { bulk: true }));
 	    function prepareExpandedCalculateRowHeightsAndFixOverlapped() {
 	        const configRows = state.get('config.list.rows');
 	        if (!configRows)
@@ -6095,13 +6066,6 @@
 	            .done();
 	        update();
 	    }
-	    onDestroy(state.subscribeAll([
-	        'config.list.rows.*.expanded',
-	        'config.chart.items.*.height',
-	        'config.chart.items.*.rowId',
-	        'config.list.rows.*.$data.outerHeight',
-	        'config.scroll.vertical.area',
-	    ], prepareExpandedCalculateRowHeightsAndFixOverlapped, { bulk: true }));
 	    function getLastPageRowsHeight(innerHeight, rowsWithParentsExpanded) {
 	        if (rowsWithParentsExpanded.length === 0)
 	            return 0;
@@ -6137,7 +6101,6 @@
 	            .update('config.scroll.vertical.areaWithoutLastPage', rowsHeight - lastPageHeight, { force: true })
 	            .done();
 	    }
-	    onDestroy(state.subscribeAll(['$data.innerHeight', '$data.list.rowsHeight'], calculateHeightRelatedThings));
 	    function calculateVisibleRowsHeights() {
 	        const scrollOffset = state.get('config.scroll.vertical.offset') || 0;
 	        const visibleRows = state.get('$data.list.visibleRows');
@@ -6147,6 +6110,43 @@
 	        }
 	        state.update('$data.list.visibleRowsHeight', height + scrollOffset);
 	    }
+	    let rowsAndItems = 0;
+	    onDestroy(state.subscribeAll(['config.chart.items;', 'config.list.rows;'], (bulk, eventInfo) => {
+	        ++rowsAndItems;
+	        generateTree('reload');
+	        prepareExpandedCalculateRowHeightsAndFixOverlapped();
+	        calculateHeightRelatedThings();
+	        calculateVisibleRowsHeights();
+	        state.update('config.scroll', (scroll) => {
+	            scroll.horizontal.dataIndex = 0;
+	            scroll.horizontal.data = null;
+	            scroll.horizontal.posPx = 0;
+	            scroll.vertical.dataIndex = 0;
+	            scroll.vertical.data = null;
+	            scroll.vertical.posPx = 0;
+	            return scroll;
+	        });
+	        if (rowsAndItems === 2 && eventInfo.type !== 'subscribe') {
+	            timeLoadedEventFired = false;
+	        }
+	        recalculateTimes({ name: 'reload' }); // eslint-disable-line @typescript-eslint/no-use-before-define
+	        if (rowsAndItems === 2) {
+	            rowsAndItems = 0;
+	        }
+	    }));
+	    onDestroy(state.subscribeAll(['config.list.rows.*.parentId', 'config.chart.items.*.rowId'], () => {
+	        generateTree();
+	        calculateHeightRelatedThings();
+	        calculateVisibleRowsHeights();
+	    }, { bulk: true }));
+	    onDestroy(state.subscribeAll([
+	        'config.list.rows.*.expanded',
+	        'config.chart.items.*.height',
+	        'config.chart.items.*.rowId',
+	        'config.list.rows.*.$data.outerHeight',
+	        'config.scroll.vertical.area',
+	    ], prepareExpandedCalculateRowHeightsAndFixOverlapped, { bulk: true }));
+	    onDestroy(state.subscribeAll(['$data.innerHeight', '$data.list.rowsHeight'], calculateHeightRelatedThings));
 	    onDestroy(state.subscribeAll([
 	        'config.chart.items.*.time',
 	        'config.chart.items.*.$data.position',
@@ -6248,7 +6248,7 @@
 	            timeLoadedEventFired = true;
 	        });
 	    }
-	    function limitGlobal(time, oldTime, reason) {
+	    function limitGlobal(time, oldTime) {
 	        if (time.leftGlobal < time.from)
 	            time.leftGlobal = time.from;
 	        if (time.rightGlobal > time.to)
@@ -6503,7 +6503,7 @@
 	                time.fromDate = api.time.date(time.from);
 	                time.toDate = api.time.date(time.to);
 	            }
-	            time = api.time.recalculateFromTo(time, reason);
+	            time = api.time.recalculateFromTo(time);
 	            if (oldTime.zoom !== time.zoom ||
 	                time.allDates.length === 0 ||
 	                reason.name === 'forceUpdate' ||
@@ -6696,7 +6696,7 @@
 	        }
 	        const startsWith = ['192.', '127.', 'test', 'demo', 'local'];
 	        const endsWith = ['test', 'local', 'demo'];
-	        // @ts-ignore
+	        /* eslint-disable */
 	        function startsEnds() {
 	            for (let i = 0, len = startsWith.length; i < len; i++) {
 	                if (location.hostname.startsWith(startsWith[i]))
@@ -6724,6 +6724,7 @@
 	        }
 	    }
 	    catch (e) { }
+	    /* eslint-enable */
 	    const dimensions = { width: 0, height: 0 };
 	    let ro;
 	    /**
@@ -6733,7 +6734,7 @@
 	    class ResizeAction {
 	        constructor(element) {
 	            if (!ro) {
-	                ro = new index((entries, observer) => {
+	                ro = new index(() => {
 	                    const width = element.clientWidth;
 	                    const height = element.clientHeight;
 	                    if (dimensions.width !== width || dimensions.height !== height) {
@@ -7137,7 +7138,7 @@
 	 * @link      https://github.com/neuronetio/gantt-schedule-timeline-calendar
 	 */
 	function List(vido, props = {}) {
-	    const { api, state, onDestroy, Actions, update, reuseComponents, html, schedule, StyleMap, cache } = vido;
+	    const { api, state, onDestroy, Actions, update, reuseComponents, html, StyleMap, cache } = vido;
 	    const componentName = 'list';
 	    const componentActions = api.getActions(componentName);
 	    let wrapper;
@@ -7186,7 +7187,7 @@
 	        ['--expander-padding-width']: '',
 	        ['--expander-size']: '',
 	    });
-	    onDestroy(state.subscribeAll(['$data.height', 'config.list.expander'], (bulk) => {
+	    onDestroy(state.subscribeAll(['$data.height', 'config.list.expander'], () => {
 	        const expander = state.get('config.list.expander');
 	        styleMap.style['height'] = state.get('$data.height') + 'px';
 	        styleMap.style['--expander-padding-width'] = expander.padding + 'px';
@@ -7197,7 +7198,7 @@
 	        listColumns.forEach((listColumn) => listColumn.destroy());
 	        listColumnUnsub();
 	    });
-	    function onWheel(ev) {
+	    function onWheel() {
 	        // TODO
 	    }
 	    let width;
@@ -7304,6 +7305,11 @@
 	    const ListColumnHeader = createComponent(ListColumnHeaderComponent, props);
 	    onDestroy(ListColumnHeader.destroy);
 	    const slots = api.generateSlots(componentName, vido, props);
+	    const visibleRows = [];
+	    function visibleRowsChange() {
+	        const val = state.get('$data.list.visibleRows') || [];
+	        reuseComponents(visibleRows, val, (row) => row && { column: props.column, row, width }, ListColumnRowComponent, false);
+	    }
 	    onChange((changedProps) => {
 	        props = changedProps;
 	        className = api.getClass(componentName, props.column.id);
@@ -7317,11 +7323,6 @@
 	        visibleRowsChange();
 	        slots.change(changedProps);
 	    });
-	    const visibleRows = [];
-	    function visibleRowsChange() {
-	        const val = state.get('$data.list.visibleRows') || [];
-	        reuseComponents(visibleRows, val, (row) => row && { column: props.column, row, width }, ListColumnRowComponent, false);
-	    }
 	    onDestroy(state.subscribeAll([
 	        '$data.list.visibleRows;',
 	        '$data.list.visibleRowsHeight',
@@ -7519,7 +7520,7 @@
           </div>
           ${slots.html('inside', templateProps)}
           <div class=${dotsClass} style=${dotsStyleMap} data-actions=${dotsActions}>
-            ${dots.map((dot) => html ` <div class=${dotClass} /> `)}
+            ${dots.map(() => html ` <div class=${dotClass} /> `)}
           </div>
           ${slots.html('after', templateProps)}
         </div>
@@ -7698,7 +7699,7 @@
 	 * @link      https://github.com/neuronetio/gantt-schedule-timeline-calendar
 	 */
 	function ListColumnRowExpander(vido, props) {
-	    const { api, state, onDestroy, Actions, update, html, createComponent, onChange } = vido;
+	    const { api, state, onDestroy, Actions, html, createComponent, onChange } = vido;
 	    const componentName = 'list-column-row-expander';
 	    const componentActions = api.getActions(componentName);
 	    const actionProps = Object.assign(Object.assign({}, props), { api, state });
@@ -7713,16 +7714,16 @@
 	    let wrapper;
 	    onDestroy(state.subscribe('config.wrappers.ListColumnRowExpander', (value) => (wrapper = value)));
 	    const slots = api.generateSlots(componentName, vido, props);
-	    if (props.row) {
-	        function onPropsChange(changedProps) {
-	            props = changedProps;
-	            className = api.getClass(componentName, props.row.id);
-	            for (const prop in props) {
-	                actionProps[prop] = props[prop];
-	            }
-	            ListColumnRowExpanderToggle.change(props);
-	            slots.change(changedProps);
+	    function onPropsChange(changedProps) {
+	        props = changedProps;
+	        className = api.getClass(componentName, props.row.id);
+	        for (const prop in props) {
+	            actionProps[prop] = props[prop];
 	        }
+	        ListColumnRowExpanderToggle.change(props);
+	        slots.change(changedProps);
+	    }
+	    if (props.row) {
 	        onChange(onPropsChange);
 	    }
 	    const actions = Actions.create(componentActions, actionProps);
@@ -7905,7 +7906,7 @@
 	 * @link      https://github.com/neuronetio/gantt-schedule-timeline-calendar
 	 */
 	function Chart(vido, props = {}) {
-	    const { api, state, onDestroy, Actions, update, html, createComponent } = vido;
+	    const { api, state, onDestroy, Actions, html, createComponent } = vido;
 	    const componentName = 'chart';
 	    const componentSubs = [];
 	    let ChartCalendarComponent;
@@ -7943,7 +7944,7 @@
 	    let ro;
 	    componentActions.push(function bindElement(element) {
 	        if (!ro) {
-	            ro = new index((entries, observer) => {
+	            ro = new index(() => {
 	                const width = element.clientWidth;
 	                const height = element.clientHeight;
 	                const innerWidth = width - state.get('config.scroll.horizontal.size');
@@ -8734,7 +8735,7 @@
 	    onChange(function onPropsChange(changedProps, options) {
 	        if (options.leave || changedProps.row === undefined) {
 	            shouldDetach = true;
-	            reuseComponents(itemComponents, [], (item) => null, ItemComponent, false);
+	            reuseComponents(itemComponents, [], () => null, ItemComponent, false);
 	            slots.change(changedProps, options);
 	            return update();
 	        }
@@ -8813,6 +8814,10 @@
 	        api,
 	        state,
 	    };
+	    const componentName = 'chart-timeline-items-row-item';
+	    let className, labelClassName;
+	    className = api.getClass(componentName);
+	    labelClassName = api.getClass(componentName + '-label');
 	    let shouldDetach = false;
 	    function updateItem(time = state.get('$data.chart.time')) {
 	        var _a, _b, _c, _d, _e, _f, _g, _h;
@@ -8890,7 +8895,6 @@
 	        actionProps.width = itemWidthPx;
 	        update();
 	    }
-	    const componentName = 'chart-timeline-items-row-item';
 	    const cutterClassName = api.getClass(componentName + '-cut');
 	    const cutterLeft = () => html `
     <div class=${cutterClassName} style=${leftCutStyleMap}>
@@ -8907,9 +8911,6 @@
     </div>
   `;
 	    const slots = api.generateSlots(componentName, vido, props);
-	    let className, labelClassName;
-	    className = api.getClass(componentName);
-	    labelClassName = api.getClass(componentName + '-label');
 	    onChange(function onPropsChange(changedProps, options) {
 	        if (options.leave || changedProps.row === undefined || changedProps.item === undefined) {
 	            leave = true;
@@ -9137,8 +9138,8 @@
 	            toggle: {
 	                display: true,
 	                icons: {
-	                    open: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path stroke="null" d="m16.406954,16.012672l4.00393,-4.012673l-4.00393,-4.012673l1.232651,-1.232651l5.245324,5.245324l-5.245324,5.245324l-1.232651,-1.232651z"/><path stroke="null" d="m-0.343497,12.97734zm1.620144,0l11.341011,0l0,-1.954681l-11.341011,0l0,1.954681zm0,3.909362l11.341011,0l0,-1.954681l-11.341011,0l0,1.954681zm0,-9.773404l0,1.95468l11.341011,0l0,-1.95468l-11.341011,0z"/></svg>`,
-	                    close: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path transform="rotate(-180 4.392796516418457,12) " stroke="null" d="m1.153809,16.012672l4.00393,-4.012673l-4.00393,-4.012673l1.232651,-1.232651l5.245324,5.245324l-5.245324,5.245324l-1.232651,-1.232651z"/><path stroke="null" d="m9.773297,12.97734zm1.620144,0l11.341011,0l0,-1.954681l-11.341011,0l0,1.954681zm0,3.909362l11.341011,0l0,-1.954681l-11.341011,0l0,1.954681zm0,-9.773404l0,1.95468l11.341011,0l0,-1.95468l-11.341011,0z"/></svg>`,
+	                    open: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path stroke="null" d="m16.406954,16.012672l4.00393,-4.012673l-4.00393,-4.012673l1.232651,-1.232651l5.245324,5.245324l-5.245324,5.245324l-1.232651,-1.232651z"/><path stroke="null" d="m-0.343497,12.97734zm1.620144,0l11.341011,0l0,-1.954681l-11.341011,0l0,1.954681zm0,3.909362l11.341011,0l0,-1.954681l-11.341011,0l0,1.954681zm0,-9.773404l0,1.95468l11.341011,0l0,-1.95468l-11.341011,0z"/></svg>',
+	                    close: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path transform="rotate(-180 4.392796516418457,12) " stroke="null" d="m1.153809,16.012672l4.00393,-4.012673l-4.00393,-4.012673l1.232651,-1.232651l5.245324,5.245324l-5.245324,5.245324l-1.232651,-1.232651z"/><path stroke="null" d="m9.773297,12.97734zm1.620144,0l11.341011,0l0,-1.954681l-11.341011,0l0,1.954681zm0,3.909362l11.341011,0l0,-1.954681l-11.341011,0l0,1.954681zm0,-9.773404l0,1.95468l11.341011,0l0,-1.95468l-11.341011,0z"/></svg>',
 	                },
 	            },
 	        },
@@ -9207,7 +9208,7 @@
 	                            {
 	                                zoomTo: 24,
 	                                period: 'month',
-	                                format({ timeStart, className, vido }) {
+	                                format({ timeStart }) {
 	                                    return timeStart.format("MMMM 'YY");
 	                                },
 	                            },
@@ -9480,7 +9481,7 @@
 	        }
 	        return time;
 	    }
-	    recalculateFromTo(time, reason) {
+	    recalculateFromTo(time) {
 	        const period = time.period;
 	        time = Object.assign({}, time);
 	        time.from = +time.from;
@@ -11101,8 +11102,6 @@
 	        if (this.debug) {
 	            // @ts-ignore
 	            window.state = state;
-	            // @ts-ignore
-	            window.api = api;
 	        }
 	    }
 	    setVido(Vido) {
@@ -11110,6 +11109,7 @@
 	    }
 	    log(...args) {
 	        if (this.debug) {
+	            // eslint-disable-next-line no-console
 	            console.log.call(console, ...args);
 	        }
 	    }
@@ -11633,6 +11633,7 @@
 	    function destroy() {
 	        component.destroy();
 	    }
+	    // eslint-disable-next-line @typescript-eslint/no-use-before-define
 	    const result = { state, api: internalApi, component, destroy, reload };
 	    function reload() {
 	        result.component.destroy();

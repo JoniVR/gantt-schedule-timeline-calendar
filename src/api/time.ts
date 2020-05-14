@@ -18,7 +18,6 @@ import {
   Period,
   ChartCalendarLevel,
   ChartCalendarFormat,
-  Reason,
 } from '../gstc';
 import DeepState from 'deep-state-observer';
 import { Api } from './api';
@@ -88,7 +87,7 @@ export class Time {
     return time;
   }
 
-  public recalculateFromTo(time: DataChartTime, reason: Reason) {
+  public recalculateFromTo(time: DataChartTime) {
     const period = time.period;
     time = { ...time };
     time.from = +time.from;

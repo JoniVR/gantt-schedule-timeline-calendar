@@ -8,7 +8,7 @@
  * @link      https://github.com/neuronetio/gantt-schedule-timeline-calendar
  */
 
-import { Vido, Wrapper, htmlResult, Item, DataChartTime, Row } from '../gstc';
+import { Vido, Wrapper, htmlResult, Item, DataChartTime } from '../gstc';
 import DeepState from 'deep-state-observer';
 import { Api, getClass } from '../api/api';
 import { lithtml } from '@neuronet.io/vido/src/vido';
@@ -235,7 +235,7 @@ class ItemResizing {
     return this.state.get(`config.plugin.Selection.selected.${ITEM}`).map((item) => this.merge({}, item) as Item);
   }
 
-  private getRightStyleMap(item: Item, visible: boolean) {
+  private getRightStyleMap(item: Item) {
     const rightStyleMap = new this.vido.StyleMap({});
     rightStyleMap.style.top = item.$data.position.actualTop + this.data.handle.verticalMargin + 'px';
     if (this.data.handle.outside) {
@@ -249,7 +249,7 @@ class ItemResizing {
     return rightStyleMap;
   }
 
-  private getLeftStyleMap(item: Item, visible: boolean) {
+  private getLeftStyleMap(item: Item) {
     const leftStyleMap = new this.vido.StyleMap({});
     leftStyleMap.style.top = item.$data.position.actualTop + this.data.handle.verticalMargin + 'px';
     if (this.data.handle.outside) {
@@ -405,7 +405,7 @@ class ItemResizing {
     this.updateData();
   }
 
-  private onEnd(which: 'left' | 'right') {
+  private onEnd() {
     const items = this.getSelectedItems();
     this.dispatchEvent('onEnd', items);
   }
@@ -423,7 +423,7 @@ class ItemResizing {
     document.body.classList.remove(this.data.bodyClassLeft);
     this.data.leftIsMoving = false;
     this.onPointerUp(ev);
-    this.onEnd('left');
+    this.onEnd();
     this.updateData();
   }
 
@@ -432,7 +432,7 @@ class ItemResizing {
     document.body.classList.remove(this.data.bodyClassRight);
     this.data.rightIsMoving = false;
     this.onPointerUp(ev);
-    this.onEnd('right');
+    this.onEnd();
     this.updateData();
   }
 
@@ -444,8 +444,9 @@ class ItemResizing {
     if (this.data.handle.onlyWhenSelected) {
       visible = visible && item.selected;
     }
-    const rightStyleMap = this.getRightStyleMap(item, visible);
-    const leftStyleMap = this.getLeftStyleMap(item, visible);
+    const rightStyleMap = this.getRightStyleMap(item);
+    const leftStyleMap = this.getLeftStyleMap(item); // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const onLeftPointerDown = {
       handleEvent: (ev) => this.onLeftPointerDown(ev),
       //capture: true,

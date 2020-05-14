@@ -14,4 +14,4 @@ if (process.env.PORT) {
   port = Number(process.env.PORT);
 }
 polonez.listen(port);
-console.log(`Visit: http://localhost:${port}/tests/index.html`);
+console.log(`Visit: http://localhost:${port}/tests/index.html`); // eslint-disable-line no-console

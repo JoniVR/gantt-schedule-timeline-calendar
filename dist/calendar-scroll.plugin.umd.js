@@ -115,7 +115,7 @@
               const scroll = state.get('config.scroll');
               this.initialDataIndex = { x: scroll.horizontal.dataIndex || 0, y: scroll.vertical.dataIndex || 0 };
           }
-          pointerUp(ev) {
+          pointerUp( /*ev: PointerEvent*/) {
               if (!enabled)
                   return;
               document.body.classList.remove(options.bodyClassName);

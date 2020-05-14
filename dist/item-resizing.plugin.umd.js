@@ -1345,7 +1345,7 @@
       getSelectedItems() {
           return this.state.get(`config.plugin.Selection.selected.${ITEM}`).map((item) => this.merge({}, item));
       }
-      getRightStyleMap(item, visible) {
+      getRightStyleMap(item) {
           const rightStyleMap = new this.vido.StyleMap({});
           rightStyleMap.style.top = item.$data.position.actualTop + this.data.handle.verticalMargin + 'px';
           if (this.data.handle.outside) {
@@ -1359,7 +1359,7 @@
           rightStyleMap.style.height = item.$data.actualHeight - this.data.handle.verticalMargin * 2 + 'px';
           return rightStyleMap;
       }
-      getLeftStyleMap(item, visible) {
+      getLeftStyleMap(item) {
           const leftStyleMap = new this.vido.StyleMap({});
           leftStyleMap.style.top = item.$data.position.actualTop + this.data.handle.verticalMargin + 'px';
           if (this.data.handle.outside) {
@@ -1513,7 +1513,7 @@
           this.dispatchEvent('onResize', selected);
           this.updateData();
       }
-      onEnd(which) {
+      onEnd() {
           const items = this.getSelectedItems();
           this.dispatchEvent('onEnd', items);
       }
@@ -1530,7 +1530,7 @@
           document.body.classList.remove(this.data.bodyClassLeft);
           this.data.leftIsMoving = false;
           this.onPointerUp(ev);
-          this.onEnd('left');
+          this.onEnd();
           this.updateData();
       }
       onRightPointerUp(ev) {
@@ -1539,7 +1539,7 @@
           document.body.classList.remove(this.data.bodyClassRight);
           this.data.rightIsMoving = false;
           this.onPointerUp(ev);
-          this.onEnd('right');
+          this.onEnd();
           this.updateData();
       }
       wrapper(input, props) {
@@ -1549,8 +1549,8 @@
           if (this.data.handle.onlyWhenSelected) {
               visible = visible && item.selected;
           }
-          const rightStyleMap = this.getRightStyleMap(item, visible);
-          const leftStyleMap = this.getLeftStyleMap(item, visible);
+          const rightStyleMap = this.getRightStyleMap(item);
+          const leftStyleMap = this.getLeftStyleMap(item); // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
           const onRightPointerDown = {
               handleEvent: (ev) => this.onRightPointerDown(ev),
           };

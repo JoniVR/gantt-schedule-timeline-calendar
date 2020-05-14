@@ -1,4 +1,5 @@
 //@ts-nocheck
+/* eslint no-undef: off */
 const port = process.env.PORT || 4444;
 
 const dayjs = require('dayjs');
@@ -38,12 +39,12 @@ describe('Basic', () => {
   it('should change chart height (inner)', async () => {
     await expect(page).toMatchElement('.gstc__list-column-row-content--1-label');
     await expect(page).toMatchElement('.gstc__list-column-row-content--5-label');
-    await page.evaluate((_) => {
+    await page.evaluate(() => {
       state.update('config.innerHeight', 100);
     });
     await expect(page).toMatchElement('.gstc__list-column-row-content--1-label');
     await expect(page).not.toMatchElement('.gstc__list-column-row-content--5-label');
-    await page.evaluate((_) => {
+    await page.evaluate(() => {
       state.update('config.innerHeight', 400);
     });
     await expect(page).toMatchElement('.gstc__list-column-row-content--1-label');
@@ -55,13 +56,13 @@ describe('Basic', () => {
       const { left, top } = document.querySelector('.gstc__scroll-bar-inner--vertical').getBoundingClientRect();
       return { left, top };
     });
-    const topRow1 = await page.evaluate((_) => state.get('$data.list.visibleRows.0.id'));
+    const topRow1 = await page.evaluate(() => state.get('$data.list.visibleRows.0.id'));
     expect(topRow1).toEqual('0');
     await page.mouse.move(left + 5, top + 5); // 5 because of rounded corners
     await page.mouse.down();
     await page.mouse.move(left + 5, top + 100);
     await page.mouse.up();
-    const topRow2 = await page.evaluate((_) => state.get('$data.list.visibleRows.0.id'));
+    const topRow2 = await page.evaluate(() => state.get('$data.list.visibleRows.0.id'));
     expect(topRow2).toEqual('23');
   });
 
@@ -70,22 +71,22 @@ describe('Basic', () => {
       const { left, top } = document.querySelector('.gstc__scroll-bar-inner--horizontal').getBoundingClientRect();
       return { left, top };
     });
-    const time1 = await page.evaluate((_) => state.get('$data.chart.time.leftGlobal'));
+    const time1 = await page.evaluate(() => state.get('$data.chart.time.leftGlobal'));
     await page.mouse.move(left + 5, top + 5); // 5 because of rounded corners
     await page.mouse.down();
     await page.mouse.move(left + 5 + 100, top + 5);
     await page.mouse.up();
-    const time2 = await page.evaluate((_) => state.get('$data.chart.time.leftGlobal'));
+    const time2 = await page.evaluate(() => state.get('$data.chart.time.leftGlobal'));
     expect(time2).not.toEqual(time1);
   });
 
   it('should scroll by api.scrollToTime', async () => {
-    const time1 = await page.evaluate((_) => {
+    const time1 = await page.evaluate(() => {
       gstc.api.scrollToTime(gstc.api.time.date().valueOf(), false);
       return state.get('$data.chart.time.leftGlobal');
     });
     expect(dayjs(time1).format('YYYY-MM-DD')).toEqual(dayjs().format('YYYY-MM-DD'));
-    const time2 = await page.evaluate((_) => {
+    const time2 = await page.evaluate(() => {
       gstc.api.scrollToTime(gstc.api.time.date().add(7, 'day').valueOf(), false);
       return state.get('$data.chart.time.leftGlobal');
     });
@@ -93,7 +94,7 @@ describe('Basic', () => {
   });
 
   it('should scroll to item (vertically & horizontally)', async () => {
-    await page.evaluate((_) => {
+    await page.evaluate(() => {
       const item = state.get('config.chart.items.1');
       gstc.api.setScrollTop(0);
       gstc.api.scrollToTime(gstc.api.time.date(item.time.start).valueOf(), false);
@@ -102,18 +103,18 @@ describe('Basic', () => {
   });
 
   it('should resize column', async () => {
-    const { left, top } = await page.evaluate((_) => {
+    const { left, top } = await page.evaluate(() => {
       const { left, top } = document
         .querySelector('.gstc__list-column-header-resizer-dots--label')
         .getBoundingClientRect();
       return { left, top };
     });
-    const width1 = await page.evaluate((_) => state.get('config.list.columns.data.label.width'));
+    const width1 = await page.evaluate(() => state.get('config.list.columns.data.label.width'));
     await page.mouse.move(left + 2, top + 5);
     await page.mouse.down();
     await page.mouse.move(left + 102, top + 5);
     await page.mouse.up();
-    const width2 = await page.evaluate((_) => state.get('config.list.columns.data.label.width'));
+    const width2 = await page.evaluate(() => state.get('config.list.columns.data.label.width'));
     expect(width2).toEqual(width1 + 100);
   });
 });

@@ -31,7 +31,7 @@ function stylus() {
       }
       return null; // other ids should be handled as usually
     },
-    writeBundle(bundle) {
+    writeBundle() {
       writeFileSync(output, result, { encoding: 'utf8' });
     },
   };

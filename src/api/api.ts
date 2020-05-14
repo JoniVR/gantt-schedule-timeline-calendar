@@ -140,8 +140,6 @@ export class Api {
     if (this.debug) {
       // @ts-ignore
       window.state = state;
-      // @ts-ignore
-      window.api = api;
     }
   }
 
@@ -151,6 +149,7 @@ export class Api {
 
   log(...args) {
     if (this.debug) {
+      // eslint-disable-next-line no-console
       console.log.call(console, ...args);
     }
   }

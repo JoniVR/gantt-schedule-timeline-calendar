@@ -12,7 +12,7 @@ import ResizeObserver from 'resize-observer-polyfill';
 import { Vido } from '../../gstc';
 
 export default function Chart(vido: Vido, props = {}) {
-  const { api, state, onDestroy, Actions, update, html, createComponent } = vido;
+  const { api, state, onDestroy, Actions, html, createComponent } = vido;
   const componentName = 'chart';
 
   const componentSubs = [];
@@ -61,7 +61,7 @@ export default function Chart(vido: Vido, props = {}) {
   let ro;
   componentActions.push(function bindElement(element) {
     if (!ro) {
-      ro = new ResizeObserver((entries, observer) => {
+      ro = new ResizeObserver(() => {
         const width = element.clientWidth;
         const height = element.clientHeight;
         const innerWidth = width - state.get('config.scroll.horizontal.size');

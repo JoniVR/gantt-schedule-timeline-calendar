@@ -60,6 +60,12 @@ export default function ChartTimelineItemsRowItem(vido: Vido, props: Props) {
       api,
       state,
     };
+
+  const componentName = 'chart-timeline-items-row-item';
+  let className, labelClassName;
+  className = api.getClass(componentName);
+  labelClassName = api.getClass(componentName + '-label');
+
   let shouldDetach = false;
 
   function updateItem(time: DataChartTime = state.get('$data.chart.time')) {
@@ -132,7 +138,6 @@ export default function ChartTimelineItemsRowItem(vido: Vido, props: Props) {
     update();
   }
 
-  const componentName = 'chart-timeline-items-row-item';
   const cutterClassName = api.getClass(componentName + '-cut');
   const cutterLeft = () => html`
     <div class=${cutterClassName} style=${leftCutStyleMap}>
@@ -150,10 +155,6 @@ export default function ChartTimelineItemsRowItem(vido: Vido, props: Props) {
   `;
 
   const slots = api.generateSlots(componentName, vido, props);
-
-  let className, labelClassName;
-  className = api.getClass(componentName);
-  labelClassName = api.getClass(componentName + '-label');
 
   onChange(function onPropsChange(changedProps, options) {
     if (options.leave || changedProps.row === undefined || changedProps.item === undefined) {

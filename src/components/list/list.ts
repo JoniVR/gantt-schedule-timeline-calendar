@@ -11,7 +11,7 @@
 import { Vido } from '../../gstc';
 
 export default function List(vido: Vido, props = {}) {
-  const { api, state, onDestroy, Actions, update, reuseComponents, html, schedule, StyleMap, cache } = vido;
+  const { api, state, onDestroy, Actions, update, reuseComponents, html, StyleMap, cache } = vido;
 
   const componentName = 'list';
   const componentActions = api.getActions(componentName);
@@ -70,7 +70,7 @@ export default function List(vido: Vido, props = {}) {
   });
 
   onDestroy(
-    state.subscribeAll(['$data.height', 'config.list.expander'], (bulk) => {
+    state.subscribeAll(['$data.height', 'config.list.expander'], () => {
       const expander = state.get('config.list.expander');
       styleMap.style['height'] = state.get('$data.height') + 'px';
       styleMap.style['--expander-padding-width'] = expander.padding + 'px';
@@ -84,7 +84,7 @@ export default function List(vido: Vido, props = {}) {
     listColumnUnsub();
   });
 
-  function onWheel(ev) {
+  function onWheel() {
     // TODO
   }
 

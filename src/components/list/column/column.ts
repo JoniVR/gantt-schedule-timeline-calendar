@@ -95,6 +95,18 @@ export default function ListColumn(vido: Vido, props: Props) {
 
   const slots = api.generateSlots(componentName, vido, props);
 
+  const visibleRows = [];
+  function visibleRowsChange() {
+    const val: Row[] = state.get('$data.list.visibleRows') || [];
+    reuseComponents(
+      visibleRows,
+      val,
+      (row) => row && { column: props.column, row, width },
+      ListColumnRowComponent,
+      false
+    );
+  }
+
   onChange((changedProps) => {
     props = changedProps;
     className = api.getClass(componentName, props.column.id);
@@ -109,17 +121,6 @@ export default function ListColumn(vido: Vido, props: Props) {
     slots.change(changedProps);
   });
 
-  const visibleRows = [];
-  function visibleRowsChange() {
-    const val: Row[] = state.get('$data.list.visibleRows') || [];
-    reuseComponents(
-      visibleRows,
-      val,
-      (row) => row && { column: props.column, row, width },
-      ListColumnRowComponent,
-      false
-    );
-  }
   onDestroy(
     state.subscribeAll(
       [

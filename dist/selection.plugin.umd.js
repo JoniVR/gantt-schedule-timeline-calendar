@@ -100,10 +100,10 @@
           showOverlay: true,
           rectangularSelection: true,
           multipleSelection: true,
-          canSelect(type, currently, all) {
+          canSelect(type, currently /*, all*/) {
               return currently;
           },
-          canDeselect(type, currently, all) {
+          canDeselect( /*type, currently, all*/) {
               return [];
           },
       };

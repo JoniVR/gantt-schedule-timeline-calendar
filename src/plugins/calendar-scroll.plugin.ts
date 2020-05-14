@@ -66,7 +66,7 @@ export function Plugin(options: Options = defaultOptions) {
       this.initialDataIndex = { x: scroll.horizontal.dataIndex || 0, y: scroll.vertical.dataIndex || 0 };
     }
 
-    private pointerUp(ev: PointerEvent) {
+    private pointerUp(/*ev: PointerEvent*/) {
       if (!enabled) return;
       document.body.classList.remove(options.bodyClassName);
       if (this.moving) {

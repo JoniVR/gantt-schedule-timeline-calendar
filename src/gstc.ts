@@ -712,6 +712,7 @@ function GSTC(options: GSTCOptions): GSTCResult {
   function destroy() {
     component.destroy();
   }
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   const result = { state, api: internalApi, component, destroy, reload };
   function reload() {
     result.component.destroy();

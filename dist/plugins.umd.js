@@ -431,7 +431,7 @@
           const time = this.state.get('$data.chart.time');
           const moving = this.data.moving.map((item) => this.merge({}, item));
           if (this.data.debug)
-              console.log('moveItems', moving);
+              console.log('moveItems', moving); // eslint-disable-line no-console
           for (let item of moving) {
               item.rowId = this.moveItemVertically(item).id;
               const newItemTimes = this.getItemMovingTimes(item, time);
@@ -519,7 +519,7 @@
               this.onEnd(); // before this.selection.selected[ITEM] clear
           this.data.moving = this.selection.selected[ITEM].map((item) => this.merge({}, item));
           if (this.data.debug)
-              console.log('state', this.data.pointerState);
+              console.log('state', this.data.pointerState); // eslint-disable-line no-console
           if (this.data.state === 'start')
               this.onStart();
           if (this.data.state === 'move' || this.data.state === 'start') {
@@ -1824,7 +1824,7 @@
       getSelectedItems() {
           return this.state.get(`config.plugin.Selection.selected.${ITEM}`).map((item) => this.merge({}, item));
       }
-      getRightStyleMap(item, visible) {
+      getRightStyleMap(item) {
           const rightStyleMap = new this.vido.StyleMap({});
           rightStyleMap.style.top = item.$data.position.actualTop + this.data.handle.verticalMargin + 'px';
           if (this.data.handle.outside) {
@@ -1838,7 +1838,7 @@
           rightStyleMap.style.height = item.$data.actualHeight - this.data.handle.verticalMargin * 2 + 'px';
           return rightStyleMap;
       }
-      getLeftStyleMap(item, visible) {
+      getLeftStyleMap(item) {
           const leftStyleMap = new this.vido.StyleMap({});
           leftStyleMap.style.top = item.$data.position.actualTop + this.data.handle.verticalMargin + 'px';
           if (this.data.handle.outside) {
@@ -1992,7 +1992,7 @@
           this.dispatchEvent('onResize', selected);
           this.updateData();
       }
-      onEnd(which) {
+      onEnd() {
           const items = this.getSelectedItems();
           this.dispatchEvent('onEnd', items);
       }
@@ -2009,7 +2009,7 @@
           document.body.classList.remove(this.data.bodyClassLeft);
           this.data.leftIsMoving = false;
           this.onPointerUp(ev);
-          this.onEnd('left');
+          this.onEnd();
           this.updateData();
       }
       onRightPointerUp(ev) {
@@ -2018,7 +2018,7 @@
           document.body.classList.remove(this.data.bodyClassRight);
           this.data.rightIsMoving = false;
           this.onPointerUp(ev);
-          this.onEnd('right');
+          this.onEnd();
           this.updateData();
       }
       wrapper(input, props) {
@@ -2028,8 +2028,8 @@
           if (this.data.handle.onlyWhenSelected) {
               visible = visible && item.selected;
           }
-          const rightStyleMap = this.getRightStyleMap(item, visible);
-          const leftStyleMap = this.getLeftStyleMap(item, visible);
+          const rightStyleMap = this.getRightStyleMap(item);
+          const leftStyleMap = this.getLeftStyleMap(item); // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
           const onRightPointerDown = {
               handleEvent: (ev) => this.onRightPointerDown(ev),
           };
@@ -2077,10 +2077,10 @@
           showOverlay: true,
           rectangularSelection: true,
           multipleSelection: true,
-          canSelect(type, currently, all) {
+          canSelect(type, currently /*, all*/) {
               return currently;
           },
-          canDeselect(type, currently, all) {
+          canDeselect( /*type, currently, all*/) {
               return [];
           },
       };
@@ -2466,7 +2466,7 @@
               const scroll = state.get('config.scroll');
               this.initialDataIndex = { x: scroll.horizontal.dataIndex || 0, y: scroll.vertical.dataIndex || 0 };
           }
-          pointerUp(ev) {
+          pointerUp( /*ev: PointerEvent*/) {
               if (!enabled)
                   return;
               document.body.classList.remove(options.bodyClassName);

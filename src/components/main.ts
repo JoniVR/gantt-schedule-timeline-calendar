@@ -52,7 +52,7 @@ export default function Main(vido: Vido, props = {}) {
           const destroyPlugin = initializePlugin(vido);
           if (typeof destroyPlugin === 'function') {
             pluginsDestroy.push(destroyPlugin);
-          } else if (destroyPlugin && destroyPlugin.hasOwnProperty('destroy')) {
+          } else if (destroyPlugin && Object.prototype.hasOwnProperty.call(destroyPlugin, 'destroy')) {
             pluginsDestroy.push(destroyPlugin.destroy);
           }
         }
@@ -133,45 +133,6 @@ export default function Main(vido: Vido, props = {}) {
     update();
   }
 
-  let rowsAndItems = 0;
-  onDestroy(
-    state.subscribeAll(['config.chart.items;', 'config.list.rows;'], (bulk, eventInfo) => {
-      ++rowsAndItems;
-      generateTree('reload');
-      prepareExpandedCalculateRowHeightsAndFixOverlapped();
-      calculateHeightRelatedThings();
-      calculateVisibleRowsHeights();
-      state.update('config.scroll', (scroll: Scroll) => {
-        scroll.horizontal.dataIndex = 0;
-        scroll.horizontal.data = null;
-        scroll.horizontal.posPx = 0;
-        scroll.vertical.dataIndex = 0;
-        scroll.vertical.data = null;
-        scroll.vertical.posPx = 0;
-        return scroll;
-      });
-      if (rowsAndItems === 2 && eventInfo.type !== 'subscribe') {
-        timeLoadedEventFired = false;
-      }
-      recalculateTimes({ name: 'reload' });
-      if (rowsAndItems === 2) {
-        rowsAndItems = 0;
-      }
-    })
-  );
-
-  onDestroy(
-    state.subscribeAll(
-      ['config.list.rows.*.parentId', 'config.chart.items.*.rowId'],
-      () => {
-        generateTree();
-        calculateHeightRelatedThings();
-        calculateVisibleRowsHeights();
-      },
-      { bulk: true }
-    )
-  );
-
   function prepareExpandedCalculateRowHeightsAndFixOverlapped() {
     const configRows: Rows = state.get('config.list.rows');
     if (!configRows) return;
@@ -186,19 +147,6 @@ export default function Main(vido: Vido, props = {}) {
       .done();
     update();
   }
-  onDestroy(
-    state.subscribeAll(
-      [
-        'config.list.rows.*.expanded',
-        'config.chart.items.*.height',
-        'config.chart.items.*.rowId',
-        'config.list.rows.*.$data.outerHeight',
-        'config.scroll.vertical.area',
-      ],
-      prepareExpandedCalculateRowHeightsAndFixOverlapped,
-      { bulk: true }
-    )
-  );
 
   function getLastPageRowsHeight(innerHeight: number, rowsWithParentsExpanded: Row[]): number {
     if (rowsWithParentsExpanded.length === 0) return 0;
@@ -234,7 +182,6 @@ export default function Main(vido: Vido, props = {}) {
       .update('config.scroll.vertical.areaWithoutLastPage', rowsHeight - lastPageHeight, { force: true })
       .done();
   }
-  onDestroy(state.subscribeAll(['$data.innerHeight', '$data.list.rowsHeight'], calculateHeightRelatedThings));
 
   function calculateVisibleRowsHeights() {
     const scrollOffset = state.get('config.scroll.vertical.offset') || 0;
@@ -245,6 +192,62 @@ export default function Main(vido: Vido, props = {}) {
     }
     state.update('$data.list.visibleRowsHeight', height + scrollOffset);
   }
+
+  let rowsAndItems = 0;
+  onDestroy(
+    state.subscribeAll(['config.chart.items;', 'config.list.rows;'], (bulk, eventInfo) => {
+      ++rowsAndItems;
+      generateTree('reload');
+      prepareExpandedCalculateRowHeightsAndFixOverlapped();
+      calculateHeightRelatedThings();
+      calculateVisibleRowsHeights();
+      state.update('config.scroll', (scroll: Scroll) => {
+        scroll.horizontal.dataIndex = 0;
+        scroll.horizontal.data = null;
+        scroll.horizontal.posPx = 0;
+        scroll.vertical.dataIndex = 0;
+        scroll.vertical.data = null;
+        scroll.vertical.posPx = 0;
+        return scroll;
+      });
+      if (rowsAndItems === 2 && eventInfo.type !== 'subscribe') {
+        timeLoadedEventFired = false;
+      }
+      recalculateTimes({ name: 'reload' }); // eslint-disable-line @typescript-eslint/no-use-before-define
+      if (rowsAndItems === 2) {
+        rowsAndItems = 0;
+      }
+    })
+  );
+
+  onDestroy(
+    state.subscribeAll(
+      ['config.list.rows.*.parentId', 'config.chart.items.*.rowId'],
+      () => {
+        generateTree();
+        calculateHeightRelatedThings();
+        calculateVisibleRowsHeights();
+      },
+      { bulk: true }
+    )
+  );
+
+  onDestroy(
+    state.subscribeAll(
+      [
+        'config.list.rows.*.expanded',
+        'config.chart.items.*.height',
+        'config.chart.items.*.rowId',
+        'config.list.rows.*.$data.outerHeight',
+        'config.scroll.vertical.area',
+      ],
+      prepareExpandedCalculateRowHeightsAndFixOverlapped,
+      { bulk: true }
+    )
+  );
+
+  onDestroy(state.subscribeAll(['$data.innerHeight', '$data.list.rowsHeight'], calculateHeightRelatedThings));
+
   onDestroy(
     state.subscribeAll(
       [
@@ -365,7 +368,7 @@ export default function Main(vido: Vido, props = {}) {
     });
   }
 
-  function limitGlobal(time: DataChartTime, oldTime: DataChartTime, reason) {
+  function limitGlobal(time: DataChartTime, oldTime: DataChartTime) {
     if (time.leftGlobal < time.from) time.leftGlobal = time.from;
     if (time.rightGlobal > time.to) time.rightGlobal = time.to;
     time.leftGlobalDate = api.time.date(time.leftGlobal).startOf(time.period);
@@ -643,7 +646,7 @@ export default function Main(vido: Vido, props = {}) {
         time.fromDate = api.time.date(time.from);
         time.toDate = api.time.date(time.to);
       }
-      time = api.time.recalculateFromTo(time, reason);
+      time = api.time.recalculateFromTo(time);
       if (
         oldTime.zoom !== time.zoom ||
         time.allDates.length === 0 ||
@@ -710,7 +713,7 @@ export default function Main(vido: Vido, props = {}) {
       }
     }
 
-    limitGlobal(time, oldTime, reason);
+    limitGlobal(time, oldTime);
 
     time.leftInner = time.leftGlobal - time.from;
     time.rightInner = time.rightGlobal - time.from;
@@ -848,7 +851,7 @@ export default function Main(vido: Vido, props = {}) {
     }
     const startsWith = ['192.', '127.', 'test', 'demo', 'local'];
     const endsWith = ['test', 'local', 'demo'];
-    // @ts-ignore
+    /* eslint-disable */
     function startsEnds() {
       for (let i = 0, len = startsWith.length; i < len; i++) {
         if (location.hostname.startsWith(startsWith[i])) return true;
@@ -873,6 +876,7 @@ export default function Main(vido: Vido, props = {}) {
       localStorage.setItem('gstcus', 'true');
     }
   } catch (e) {}
+  /* eslint-enable */
 
   const dimensions = { width: 0, height: 0 };
   let ro;
@@ -883,7 +887,7 @@ export default function Main(vido: Vido, props = {}) {
   class ResizeAction {
     constructor(element: HTMLElement) {
       if (!ro) {
-        ro = new ResizeObserver((entries, observer) => {
+        ro = new ResizeObserver(() => {
           const width = element.clientWidth;
           const height = element.clientHeight;
           if (dimensions.width !== width || dimensions.height !== height) {

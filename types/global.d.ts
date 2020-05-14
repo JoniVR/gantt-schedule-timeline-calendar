@@ -1,6 +1,6 @@
 declare module "api/time" {
     import dayjs, { Dayjs } from 'dayjs';
-    import { DataChartTime, DataChartTimeLevelDate, ChartTimeDate, ScrollTypeHorizontal, Period, ChartCalendarLevel, ChartCalendarFormat, Reason } from "gstc";
+    import { DataChartTime, DataChartTimeLevelDate, ChartTimeDate, ScrollTypeHorizontal, Period, ChartCalendarLevel, ChartCalendarFormat } from "gstc";
     import DeepState from 'deep-state-observer';
     import { Api } from "api/api";
     export interface CurrentDate {
@@ -22,7 +22,7 @@ declare module "api/time" {
         private resetCurrentDate;
         date(time?: number | string | Date | undefined): dayjs.Dayjs;
         private addAdditionalSpace;
-        recalculateFromTo(time: DataChartTime, reason: Reason): DataChartTime;
+        recalculateFromTo(time: DataChartTime): DataChartTime;
         getCenter(time: DataChartTime): number;
         getGlobalOffsetPxFromDates(date: Dayjs, time?: DataChartTime): number;
         getViewOffsetPxFromDates(date: Dayjs, limitToView?: boolean, time?: DataChartTime): number;

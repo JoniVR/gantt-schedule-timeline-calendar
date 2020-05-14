@@ -118,7 +118,7 @@ export default function ListColumnHeaderResizer(vido: Vido, props: Props) {
           </div>
           ${slots.html('inside', templateProps)}
           <div class=${dotsClass} style=${dotsStyleMap} data-actions=${dotsActions}>
-            ${dots.map((dot) => html` <div class=${dotClass} /> `)}
+            ${dots.map(() => html` <div class=${dotClass} /> `)}
           </div>
           ${slots.html('after', templateProps)}
         </div>

@@ -329,7 +329,7 @@ class ItemMovement {
     if (!this.data.enabled) return;
     const time: DataChartTime = this.state.get('$data.chart.time');
     const moving = this.data.moving.map((item) => this.merge({}, item) as Item);
-    if (this.data.debug) console.log('moveItems', moving);
+    if (this.data.debug) console.log('moveItems', moving); // eslint-disable-line no-console
     for (let item of moving) {
       item.rowId = this.moveItemVertically(item).id;
       const newItemTimes = this.getItemMovingTimes(item, time);
@@ -423,7 +423,7 @@ class ItemMovement {
     if (this.data.state === 'end') this.onEnd(); // before this.selection.selected[ITEM] clear
 
     this.data.moving = this.selection.selected[ITEM].map((item) => this.merge({}, item) as Item);
-    if (this.data.debug) console.log('state', this.data.pointerState);
+    if (this.data.debug) console.log('state', this.data.pointerState); // eslint-disable-line no-console
 
     if (this.data.state === 'start') this.onStart();
 

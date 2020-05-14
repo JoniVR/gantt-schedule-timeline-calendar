@@ -119,7 +119,7 @@ export default function ChartTimelineItemsRow(vido: Vido, props: Props) {
   onChange(function onPropsChange(changedProps: Props, options) {
     if (options.leave || changedProps.row === undefined) {
       shouldDetach = true;
-      reuseComponents(itemComponents, [], (item) => null, ItemComponent, false);
+      reuseComponents(itemComponents, [], () => null, ItemComponent, false);
       slots.change(changedProps, options);
       return update();
     }
