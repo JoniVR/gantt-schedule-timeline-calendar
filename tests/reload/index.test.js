@@ -6,8 +6,19 @@ const dayjs = require('dayjs');
 describe('Reload', () => {
   beforeAll(async () => {
     await page.goto(`http://localhost:${port}/tests/reload/index.html`);
+  });
+
+  beforeEach(async () => {
     await page.evaluate(() => {
-      reload();
+      return new Promise((resolve) => {
+        function loaded() {
+          resolve();
+          console.log('loaded'); // eslint-disable-line
+          document.querySelector('.gstc').removeEventListener('gstc-loaded', loaded);
+        }
+        document.querySelector('.gstc').addEventListener('gstc-loaded', loaded);
+        reload();
+      });
     });
   });
 
@@ -23,6 +34,7 @@ describe('Reload', () => {
     await expect(page).toMatchElement('.gstc__scroll-bar--vertical');
     await expect(page).toMatchElement('.gstc__scroll-bar--horizontal');
     await expect(page).toMatchElement('.gstc__chart-timeline-grid-row-cell.current');
+    await expect(page).toMatchElement('.cell-slot-3');
   });
 
   it('should expand row', async () => {
@@ -31,8 +43,10 @@ describe('Reload', () => {
     await expect(page).toMatchElement('.gstc__list-column-row-content--2-label', {
       text: 'row id: 2',
     });
+    await expect(page).toMatchElement('.cell-slot-2');
     await page.click('.gstc__list-column-row-expander--1');
     await expect(page).not.toMatchElement('.gstc__list-column-row-content--2-label');
+    await expect(page).not.toMatchElement('.cell-slot-2');
   });
 
   it('should hide left side list', async () => {
@@ -50,11 +64,13 @@ describe('Reload', () => {
     });
     await expect(page).toMatchElement('.gstc__list-column-row-content--1-label');
     await expect(page).not.toMatchElement('.gstc__list-column-row-content--5-label');
+    await expect(page).not.toMatchElement('.cell-slot-5');
     await page.evaluate(() => {
       state.update('config.innerHeight', 400);
     });
     await expect(page).toMatchElement('.gstc__list-column-row-content--1-label');
     await expect(page).toMatchElement('.gstc__list-column-row-content--5-label');
+    await expect(page).toMatchElement('.cell-slot-5');
   });
 
   it('should scroll vertically with scrollbar', async () => {
@@ -64,12 +80,14 @@ describe('Reload', () => {
     });
     const topRow1 = await page.evaluate(() => state.get('$data.list.visibleRows.0.id'));
     expect(topRow1).toEqual('0');
+    //await expect(page).toMatchElement('.cell-slot-0');
     await page.mouse.move(left + 5, top + 5); // 5 because of rounded corners
     await page.mouse.down();
     await page.mouse.move(left + 5, top + 100);
     await page.mouse.up();
     const topRow2 = await page.evaluate(() => state.get('$data.list.visibleRows.0.id'));
     expect(topRow2).toEqual('23');
+    //await expect(page).toMatchElement('.cell-slot-23');
   });
 
   it('should scroll horizontally with scrollbar', async () => {
@@ -78,12 +96,14 @@ describe('Reload', () => {
       return { left, top };
     });
     const time1 = await page.evaluate(() => state.get('$data.chart.time.leftGlobal'));
+    //await expect(page).toMatchElement('.cell-slot-3');
     await page.mouse.move(left + 5, top + 5); // 5 because of rounded corners
     await page.mouse.down();
     await page.mouse.move(left + 5 + 100, top + 5);
     await page.mouse.up();
     const time2 = await page.evaluate(() => state.get('$data.chart.time.leftGlobal'));
     expect(time2).not.toEqual(time1);
+    //await expect(page).toMatchElement('.cell-slot-3');
   });
 
   it('should scroll by api.scrollToTime', async () => {

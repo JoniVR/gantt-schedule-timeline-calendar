@@ -26,6 +26,7 @@ function generateRowsAndItems(iterations) {
     items[id] = {
       id,
       label: 'item id ' + id,
+      random: Math.round(Math.random()*10000),
       time: {
         start: startDayjs.valueOf(),
         end: startDayjs
@@ -68,6 +69,14 @@ const columns = {
   },
 };
 
+function CellSlot(vido, props) {
+  const { html, onChange } = vido;
+  onChange((changedProps) => {
+    props = changedProps;
+  });
+  return () => html`<div class="cell-slot cell-slot-${props.row.id}" style="color: #ccc;font-size: 10px;">SLOT ${props.row.id}<br>${props.row.$data.items[0].random}<br>${props.time.leftGlobalDate.format('DD')}</div>`;
+}
+
 const config = {
   list: {
     rows,
@@ -76,6 +85,9 @@ const config = {
   chart: {
     items,
   },
+  slots: {
+    'chart-timeline-grid-row-cell': {inside: [CellSlot] }
+  }
 };
 
 var state = GSTC.api.stateFromConfig(config);
@@ -91,10 +103,11 @@ var gstc = GSTC({
 });
 
 function reload(iterations = 100) {
+  console.log('reload from js'); // eslint-disable-line no-console
   const { rows, items } = generateRowsAndItems(iterations);
   state.update('config', (config) => {
-    config.row = rows;
-    config.items = items;
+    config.list.rows = rows;
+    config.chart.items = items;
     return config;
   });
 }

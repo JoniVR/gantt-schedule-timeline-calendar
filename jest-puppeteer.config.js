@@ -4,6 +4,8 @@ module.exports = {
   launch: {
     dumpio: true,
     headless,
+    defaultViewport: null,
+    args: ['--start-maximized']
     //devtools: !headless
     //slowMo: headless ? 0 : 25,
   },
