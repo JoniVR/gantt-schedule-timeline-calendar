@@ -16,7 +16,7 @@
     "autotypes": "tsc -p ./tsconfig.types.json -w",
     "start": "node tests/server.js 5000",
     "lint": "eslint .",
-    "format": "prettier --write 'src/**/*.(ts|js|html|json)' 'tests/**/*.(js|html)'"
+    "format": "prettier --write 'src/**/*.(ts|js|html|json)' && prettier --write 'tests/**/*.(js|html)'"
   },
   "repository": {
     "type": "git",
