@@ -8,7 +8,10 @@
   },
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/eslint-recommended"],
   "globals": {
-    "page": true
+    "page": true,
+    "browser": true,
+    "context": true,
+    "jestPuppeteer": true
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {

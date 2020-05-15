@@ -4,7 +4,8 @@ module.exports = {
   launch: {
     dumpio: true,
     headless,
-    slowMo: headless ? 0 : 25,
+    //devtools: !headless
+    //slowMo: headless ? 0 : 25,
   },
   server: {
     command: 'node tests/server.js',
